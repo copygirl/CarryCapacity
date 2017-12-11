@@ -12,6 +12,17 @@ namespace CarryCapacity
 	{
 		public static CarryCapacityMod INSTANCE { get; private set; }
 		
+		public static ModInfo MOD_INFO { get; } = new ModInfo {
+			Name        = "CarryCapacity",
+			Description = "Adds the capability to carry various things",
+			Website     = "https://github.com/copygirl/CarryCapacity",
+			Author      = "copygirl",
+			Version     = "0.1.0",
+		};
+		
+		
+		public override ModInfo GetModInfo() { return MOD_INFO; }
+		
 		public override void Start(ICoreAPI api)
 		{
 			base.Start(api);

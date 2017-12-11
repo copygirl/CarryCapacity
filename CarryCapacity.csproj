@@ -9,6 +9,7 @@
     <RepositoryUrl>https://github.com/copygirl/CarryCapacity</RepositoryUrl>
     
     <TargetFramework>net452</TargetFramework>
+    <LangVersion>latest</LangVersion>
     
   </PropertyGroup>
   <ItemGroup>

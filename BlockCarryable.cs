@@ -1,5 +1,4 @@
 using System;
-using System.Diagnostics;
 using Vintagestory.API.Common;
 using Vintagestory.API.Common.Entities;
 
@@ -18,15 +17,20 @@ namespace CarryCapacity
 		public override bool OnPlayerPlacedBlockInteract(
 			IWorldAccessor world, IPlayer byPlayer, BlockSelection blockSel, ref EnumHandling handling)
 		{
+			var isSneaking    = byPlayer.Entity.Controls.Sneak;
+			var isEmptyHanded = byPlayer.Entity.HeldItemSlot.Empty;
+			
 			// Only activate this block behavior if sneaking with an empty hand.
-			IEntityPlayer player = byPlayer.Entity;
-			bool isSneaking    = player.Controls.Sneak;
-			bool isEmptyHanded = player.HeldItemSlot.Empty;
 			if (!isSneaking || !isEmptyHanded) return false;
 			
 			if (world.Side == EnumAppSide.Server) {
-				// TODO: Actually do something interesting here.
-				world.BlockAccessor.SetBlock(0, blockSel.Position);
+				var pos    = blockSel.Position;
+				var block  = world.BlockAccessor.GetBlockId(pos);
+				var entity = world.BlockAccessor.GetBlockEntity(pos);
+				
+				byPlayer.WorldData.MoveSpeedMultiplier -= 0.5F;
+				
+				world.BlockAccessor.SetBlock(0, pos);
 			}
 			
 			handling = EnumHandling.PreventDefault;
