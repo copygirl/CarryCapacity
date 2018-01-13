@@ -21,5 +21,6 @@
   </ItemGroup>
   <Target Name="Copy" AfterTargets="PostBuildEvent">
     <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(VINTAGE_STORY)/Mods" />
+    <Copy SourceFiles="$(TargetDir)/$(TargetName).pdb" DestinationFolder="$(VINTAGE_STORY)/Mods" />
   </Target>
 </Project>
