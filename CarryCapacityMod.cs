@@ -1,7 +1,5 @@
-using System;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
-using Vintagestory.API.Common.Entities;
 using Vintagestory.API.Server;
 
 namespace CarryCapacity
@@ -10,8 +8,6 @@ namespace CarryCapacity
 	///           blocks such as chests to be picked up and carried around. </summary>
 	public class CarryCapacityMod : ModBase
 	{
-		public static CarryCapacityMod INSTANCE { get; private set; }
-		
 		public static ModInfo MOD_INFO { get; } = new ModInfo {
 			Name        = "CarryCapacity",
 			Description = "Adds the capability to carry various things",
@@ -20,15 +16,34 @@ namespace CarryCapacity
 			Version     = "0.1.0",
 		};
 		
+		public static string MOD_ID => MOD_INFO.Name.ToLowerInvariant();
+		
+		public static IClientNetworkChannel CLIENT_CHANNEL { get; private set; }
+		
 		
 		public override ModInfo GetModInfo() { return MOD_INFO; }
 		
 		public override void Start(ICoreAPI api)
 		{
-			base.Start(api);
-			INSTANCE = this;
-			
 			api.RegisterBlockBehavior(BlockCarryable.NAME, typeof(BlockCarryable));
+			
+			base.Start(api);
+		}
+		
+		public override void StartClientSide(ICoreClientAPI api)
+		{
+			api.World.RegisterGameTickListener(
+				(delta) => BlockCarryable.OnClientPlayerUpdate(api.World.Player), 0);
+			
+			CLIENT_CHANNEL = api.Network.RegisterChannel(MOD_ID)
+				.RegisterMessageType(typeof(PlaceDownMessage));
+		}
+		
+		public override void StartServerSide(ICoreServerAPI api)
+		{
+			api.Network.RegisterChannel(MOD_ID)
+				.RegisterMessageType(typeof(PlaceDownMessage))
+				.SetMessageHandler<PlaceDownMessage>(BlockCarryable.OnPlaceDownMessage);
 		}
 	}
 }

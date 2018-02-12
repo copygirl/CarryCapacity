@@ -18,6 +18,8 @@
       <HintPath>$(VINTAGE_STORY)/VintagestoryAPI.dll</HintPath>
     </Reference>
     
+    <PackageReference Include="protobuf-net" Version="2.1.0" />
+    
   </ItemGroup>
   <Target Name="Copy" AfterTargets="PostBuildEvent">
     <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(VINTAGE_STORY_DATA)/Mods" />

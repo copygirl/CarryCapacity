@@ -1,0 +1,63 @@
+{
+	code: "stationarybasket",
+	entityclass: "Basket",
+	behaviors: [
+		{ name: "Carryable" },
+		{ name: "Container" },
+		{ name: "HorizontalOrientable" },
+	],
+	variantgroups: [
+		{ code:"side", loadFromProperties: "abstract/horizontalorientation" }
+	],
+	heldTpIdleAnimation: "holdinglargeanimal",
+	creativeinventory: { "general": ["stationarybasket-north"], "decorative": ["stationarybasket-north"] },
+	shapebytype: {
+		"*-north": { base: "block/basket", rotateY: 0 },
+		"*-east": { base: "block/basket", rotateY: 270 },
+		"*-south": { base: "block/basket", rotateY: 180 },
+		"*-west": { base: "block/basket", rotateY: 90 }
+	},
+	blockmaterial: "Wood",
+	replaceable: 900,
+	resistance: 2,
+	lightAbsorption: 0,
+	lightRadius: 0,
+	sidesolid: {
+		all: false
+	},
+	sideopaque: {
+		all: false
+	},
+	collisionbox: {
+		x1: 0.125, y1: 0, z1: 0.125, x2: 0.875, y2: 0.5, z2: 0.8125,
+		rotateYByType: {
+			"*-north": 0,
+			"*-east": 270,
+			"*-south": 180,
+			"*-west": 90
+		}
+	},
+	selectionbox: {
+		x1: 0.125, y1: 0, z1: 0.125, x2: 0.875, y2: 0.5, z2: 0.8125,
+		rotateYByType: {
+			"*-north": 0,
+			"*-east": 270,
+			"*-south": 180,
+			"*-west": 90
+		}
+	},
+	sounds: {
+		"place": "block/planks",
+		"walk": "walk/wood"
+	},
+	materialDensity: 600,
+	tpHandTransform: {
+		translation: { x: -0.9, y: -0.5, z: -0.3 },
+		rotation: { x: 0, y: 90, z: -102 },
+		scale: 0.56
+	},
+	guiTransform: {
+		origin: { x: 0.5, y: 0.3, z: 0.5 },
+		scale: 1.3
+	}
+}
