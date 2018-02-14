@@ -21,7 +21,9 @@ namespace CarryCapacity
 		public static IClientNetworkChannel CLIENT_CHANNEL { get; private set; }
 		
 		
-		public override ModInfo GetModInfo() { return MOD_INFO; }
+		public override ModInfo GetModInfo() => MOD_INFO;
+		
+		public override bool AllowRuntimeReload() => true;
 		
 		public override void Start(ICoreAPI api)
 		{
@@ -32,11 +34,13 @@ namespace CarryCapacity
 		
 		public override void StartClientSide(ICoreClientAPI api)
 		{
+			CLIENT_CHANNEL = api.Network.RegisterChannel(MOD_ID)
+				.RegisterMessageType(typeof(PlaceDownMessage));
+			
 			api.World.RegisterGameTickListener(
 				(delta) => BlockCarryable.OnClientPlayerUpdate(api.World.Player), 0);
 			
-			CLIENT_CHANNEL = api.Network.RegisterChannel(MOD_ID)
-				.RegisterMessageType(typeof(PlaceDownMessage));
+			CarryRenderer.Register(api);
 		}
 		
 		public override void StartServerSide(ICoreServerAPI api)

@@ -2,7 +2,12 @@
 	code: "chest",
 	entityclass: "Chest",
 	behaviors: [
-		{ name: "Carryable" },
+		{
+			name: "Carryable",
+			properties: {
+				translation: [ -0.0625, 0, 0 ]
+			}
+		},
 		{ name: "Container" },
 		{ name: "HorizontalOrientable" },
 	],
