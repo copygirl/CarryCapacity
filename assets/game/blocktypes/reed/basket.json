@@ -2,13 +2,10 @@
 	code: "stationarybasket",
 	entityclass: "Basket",
 	behaviors: [
-		{
-			name: "Carryable",
-			properties: {
-				rotation: [ 0, 0, -90 ],
-				scale: 0.65,
-			}
-		},
+		{ name: "Carryable", properties: {
+			rotation: [ 0, 0, -90 ],
+			scale: 0.65,
+		} },
 		{ name: "Container" },
 		{ name: "HorizontalOrientable" },
 	],
