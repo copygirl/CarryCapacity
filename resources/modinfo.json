@@ -1,0 +1,10 @@
+
+{
+	"type": "code",
+	"name": "CarryCapacity",
+	"description" : "Adds the capability to carry various things",
+	"website": "https://github.com/copygirl/CarryCapacity",
+	"author": "copygirl",
+	"version": "0.1.0",
+	"gameversions": [ "1.5.0.4+" ]
+}

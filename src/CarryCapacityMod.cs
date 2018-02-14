@@ -13,7 +13,6 @@ namespace CarryCapacity
 			Description = "Adds the capability to carry various things",
 			Website     = "https://github.com/copygirl/CarryCapacity",
 			Author      = "copygirl",
-			Version     = "0.1.0",
 		};
 		
 		public static string MOD_ID => MOD_INFO.Name.ToLowerInvariant();

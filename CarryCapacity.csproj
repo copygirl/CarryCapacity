@@ -1,31 +1,34 @@
 <Project Sdk="Microsoft.NET.Sdk">
-  <PropertyGroup>
-    
-    <AssemblyTitle>CarryCapacity</AssemblyTitle>
-    <Authors>copygirl</Authors>
-    <Version>0.1.0</Version>
-    
-    <Description>Vintage Story mod which adds the capability to carry various things</Description>
-    <RepositoryUrl>https://github.com/copygirl/CarryCapacity</RepositoryUrl>
-    
-    <TargetFramework>net452</TargetFramework>
-    <LangVersion>latest</LangVersion>
-    
-  </PropertyGroup>
-  <ItemGroup>
-    
-    <Reference Include="VintagestoryAPI">
-      <HintPath>$(VINTAGE_STORY)/VintagestoryAPI.dll</HintPath>
-    </Reference>
-    <Reference Include="VSSurvivalMod">
-      <HintPath>$(VINTAGE_STORY)/Mods/VSSurvivalMod.dll</HintPath>
-    </Reference>
-    
-    <PackageReference Include="protobuf-net" Version="2.1.0" />
-    
-  </ItemGroup>
-  <Target Name="Copy" AfterTargets="PostBuildEvent">
-    <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(VINTAGE_STORY_DATA)/Mods" />
-    <Copy SourceFiles="$(TargetDir)/$(TargetName).pdb" DestinationFolder="$(VINTAGE_STORY_DATA)/Mods" />
-  </Target>
+	<PropertyGroup>
+		
+		<AssemblyTitle>CarryCapacity</AssemblyTitle>
+		<Authors>copygirl</Authors>
+		<Version>0.1.0</Version>
+		
+		<Description>Vintage Story mod which adds the capability to carry various things</Description>
+		<RepositoryUrl>https://github.com/copygirl/CarryCapacity</RepositoryUrl>
+		
+		<TargetFramework>net452</TargetFramework>
+		<LangVersion>latest</LangVersion>
+		
+	</PropertyGroup>
+	<ItemGroup>
+		
+		<Reference Include="VintagestoryAPI">
+			<HintPath>$(VINTAGE_STORY)/VintagestoryAPI.dll</HintPath>
+		</Reference>
+		<Reference Include="VSSurvivalMod">
+			<HintPath>$(VINTAGE_STORY)/Mods/VSSurvivalMod.dll</HintPath>
+		</Reference>
+		
+	</ItemGroup>
+	<ItemGroup>
+		
+		<PackageReference Include="protobuf-net" Version="2.1.0" />
+		
+	</ItemGroup>
+	<Target Name="Copy" AfterTargets="PostBuildEvent" Condition="'$(Configuration)' == 'Debug'">
+		<Copy SourceFiles="$(TargetPath)" DestinationFolder="$(VINTAGE_STORY_DATA)/Mods" />
+		<Copy SourceFiles="$(TargetDir)/$(TargetName).pdb" DestinationFolder="$(VINTAGE_STORY_DATA)/Mods" />
+	</Target>
 </Project>
