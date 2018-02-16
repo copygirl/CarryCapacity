@@ -33,7 +33,7 @@ behaviors: [
     translation: [ 0, 0, 0 ],
     rotation: [ 0, 0, 0 ],
     origin: [ 0, 0, 0 ],
-    scale: 0.55,
+    scale: 0.5,
   } },
   { name: "Container" },
   ...

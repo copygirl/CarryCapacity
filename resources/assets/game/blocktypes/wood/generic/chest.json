@@ -3,7 +3,8 @@
 	entityclass: "Chest",
 	behaviors: [
 		{ name: "Carryable", properties: {
-			translation: [ -0.0625, 0, 0 ]
+			translation: [ -0.0625, 0, 0 ],
+			rotation: [ 0, 90, 0 ],
 		} },
 		{ name: "Container" },
 		{ name: "HorizontalOrientable" },
