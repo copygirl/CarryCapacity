@@ -50,20 +50,23 @@ namespace CarryCapacity
 			if (code == null) return null;
 			if (_cachedBlocks.TryGetValue(code, out var cached)) return cached;
 			
-			var block = _api.World.GetBlock(new AssetLocation(code));
-			if (block != null) {
+			var block    = _api.World.GetBlock(new AssetLocation(code));
+			var behavior = block.GetBehavior(typeof(BlockCarryable));
+			if (behavior != null) {
+				
 				var meshData  = _api.Tesselator.GetDefaultBlockMesh(block);
 				var mesh      = _api.Render.UploadMesh(meshData);
 				var textureID = _api.BlockTextureAtlas.Positions[0].atlasTextureId;
 				
 				var transform = _defaultTransform.Clone();
-				var behavior  = block.GetBehavior(typeof(BlockCarryable));
 				// Load transform from behavior properties (or use default).
-				TryGetVec3f(behavior.properties["translation"], ref transform.Translation);
-				TryGetVec3f(behavior.properties["rotation"], ref transform.Rotation);
-				TryGetVec3f(behavior.properties["origin"], ref transform.Origin);
-				var scale = behavior.properties["scale"].AsFloat();
-				if (scale > 0) transform.Scale = scale;
+				if (behavior.properties != null) {
+					TryGetVec3f(behavior.properties["translation"], ref transform.Translation);
+					TryGetVec3f(behavior.properties["rotation"], ref transform.Rotation);
+					TryGetVec3f(behavior.properties["origin"], ref transform.Origin);
+					var scale = behavior.properties["scale"].AsFloat();
+					if (scale > 0) transform.Scale = scale;
+				}
 				
 				// FIXME: AsFloatArray() currently has an issue, simplify with next version!
 				void TryGetVec3f(JsonObject obj, ref Vec3f result) {
@@ -81,6 +84,7 @@ namespace CarryCapacity
 				}
 				
 				cached = new CachedCarryableBlock(mesh, textureID, transform);
+				
 			}
 			
 			_cachedBlocks.Add(code, cached);
