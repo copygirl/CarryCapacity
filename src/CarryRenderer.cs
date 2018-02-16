@@ -99,6 +99,10 @@ namespace CarryCapacity
 		public void OnRenderFrame(float deltaTime, EnumRenderStage stage)
 		{
 			foreach (var player in _api.World.AllPlayers) {
+				// Don't render anything on the client player if they're in first person.
+				if ((_api.World.Player.CameraMode == EnumCameraMode.FirstPerson)
+					&& (player == _api.World.Player)) continue;
+				
 				var entity = player.Entity;
 				var code   = entity.WatchedAttributes.GetString(BlockCarryable.ATTRIBUTE_ID);
 				var cached = GetCachedBlock(code);
