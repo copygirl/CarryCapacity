@@ -32,11 +32,14 @@ namespace CarryCapacity
 			// Only activate this block behavior if sneaking with an empty hand.
 			if (!isSneaking || !isEmptyHanded || isCarrying) return false;
 			
+			var pos       = blockSel.Position;
+			var block     = world.BlockAccessor.GetBlock(pos);
+			var blockCode = block.OnPickBlock(world, pos)?.Block?.Code;
+			// If block code can't be found, abort!
+			if (blockCode == null) return false;
+			
 			if (world.Side == EnumAppSide.Server) {
-				var pos = blockSel.Position;
-				var blockCode   = world.BlockAccessor.GetBlock(pos).Code;
 				var blockEntity = world.BlockAccessor.GetBlockEntity(pos);
-				
 				if (blockEntity != null) {
 					// Save the block entity data to TreeAttribute and
 					// then on the non-synced attributes of the player.
@@ -79,14 +82,19 @@ namespace CarryCapacity
 		
 		public static void OnPlaceDownMessage(IPlayer player, PlaceDownMessage message)
 		{
+			// FIXME: Do at least some validation of this data.
 			if (!PlaceDown(player, message.Selection)) {
-				player.Entity.World.BlockAccessor.MarkBlockDirty(message.Position);
+				player.Entity.World.BlockAccessor.MarkBlockDirty(message.Selection.Position);
 				player.Entity.WatchedAttributes.MarkPathDirty(ATTRIBUTE_ID);
 			}
 		}
 		
 		public static bool PlaceDown(IPlayer player, BlockSelection selection)
 		{
+			// Clone the selection, because we don't
+			// want to affect what is sent to the server.
+			selection = selection.Clone();
+			
 			var entity = player.Entity;
 			var world  = entity.World;
 			
@@ -94,33 +102,47 @@ namespace CarryCapacity
 			var isEmptyHanded = entity.RightHandItemSlot.Empty;
 			var isCarrying    = entity.WatchedAttributes.HasAttribute(ATTRIBUTE_ID);
 			
-			if (!isSneaking || !isEmptyHanded || !isCarrying
-				|| (selection.Face != BlockFacing.UP)) return false;
-			
-			var clickedBlock = world.BlockAccessor.GetBlock(selection.Position);
-			if (!clickedBlock.SideSolid[selection.Face.Index]) return false;
+			if (!isSneaking || !isEmptyHanded || !isCarrying) return false;
 			
 			var carryingBlockCode = entity.WatchedAttributes.GetString(ATTRIBUTE_ID);
 			var carryingBlock     = world.GetBlock(new AssetLocation(carryingBlockCode));
 			
-			var emptyBlockPos = selection.Position.AddCopy(selection.Face);
-			var emptyBlock    = world.BlockAccessor.GetBlock(emptyBlockPos);
-			if (!emptyBlock.IsReplacableBy(carryingBlock)) return false;
+			var clickedBlock = world.BlockAccessor.GetBlock(selection.Position);
+			// If clicked block is replacable, check block below instead.
+			if (clickedBlock.IsReplacableBy(carryingBlock)) {
+				selection.Face = BlockFacing.UP;
+				clickedBlock   = world.BlockAccessor.GetBlock(selection.Position.DownCopy());
+			// Otherwise make sure that the block was clicked on the top side.
+			} else if (selection.Face == BlockFacing.UP) {
+				selection.Position.Up();
+				selection.DidOffset = true;
+			} else return false;
 			
-			world.BlockAccessor.SetBlock((ushort)carryingBlock.Id, emptyBlockPos);
+			// And also that the clicked block is solid on top.
+			if (!clickedBlock.SideSolid[BlockFacing.UP.Index]) return false;
+			
+			// Now try placing the block. Just going to utilize the default
+			// block placement using an item stack. Let's hope nothing breaks!
+			var stack = new ItemStack(carryingBlock);
+			if (!carryingBlock.TryPlaceBlock(world, player, stack, selection)) return false;
+			
 			entity.WatchedAttributes.RemoveAttribute(ATTRIBUTE_ID);
 			
+			// On the server, restore the block entity.
 			if ((world.Side == EnumAppSide.Server)
 				&& entity.Attributes.HasAttribute(ATTRIBUTE_ID)) {
 				
 				var blockEntityData = entity.Attributes.GetTreeAttribute(ATTRIBUTE_ID);
-				blockEntityData.SetInt("posx", emptyBlockPos.X);
-				blockEntityData.SetInt("posy", emptyBlockPos.Y);
-				blockEntityData.SetInt("posz", emptyBlockPos.Z);
-				entity.Attributes.RemoveAttribute(ATTRIBUTE_ID);
+				// Set the block entity's position to the new position.
+				// Without this, we get some funny behavior.
+				blockEntityData.SetInt("posx", selection.Position.X);
+				blockEntityData.SetInt("posy", selection.Position.Y);
+				blockEntityData.SetInt("posz", selection.Position.Z);
 				
-				var blockEntity = world.BlockAccessor.GetBlockEntity(emptyBlockPos);
+				var blockEntity = world.BlockAccessor.GetBlockEntity(selection.Position);
 				blockEntity.FromTreeAtributes(blockEntityData);
+				
+				entity.Attributes.RemoveAttribute(ATTRIBUTE_ID);
 				
 			}
 			

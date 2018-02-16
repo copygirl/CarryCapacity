@@ -1,4 +1,5 @@
 using ProtoBuf;
+using ProtoBuf.Meta;
 using Vintagestory.API.Common;
 using Vintagestory.API.MathTools;
 
@@ -7,22 +8,27 @@ namespace CarryCapacity
 	[ProtoContract(ImplicitFields = ImplicitFields.AllFields)]
 	public class PlaceDownMessage
 	{
-		private byte _face;
+		private readonly BlockPos _pos;
+		private readonly byte _face;
+		private readonly float _x, _y, _z;
 		
-		public BlockPos Position { get; set; }
+		public BlockSelection Selection
+			=> new BlockSelection {
+				Position    = _pos,
+				Face        = BlockFacing.ALLFACES[_face],
+				HitPosition = new Vec3d(_x, _y, _z),
+			};
 		
-		public BlockFacing Face {
-			get => BlockFacing.ALLFACES[_face];
-			set => _face = (byte)value.Index;
-		}
-		
-		public BlockSelection Selection => new BlockSelection
-			{ Position = Position, Face = Face };
 		
 		private PlaceDownMessage() {  }
-		public PlaceDownMessage(BlockPos position, BlockFacing face)
-			{ Position = position; Face = face; }
+		
 		public PlaceDownMessage(BlockSelection selection)
-			: this(selection.Position, selection.Face) {  }
+		{
+			_pos  = selection.Position;
+			_face = (byte)selection.Face.Index;
+			_x = (float)selection.HitPosition.X;
+			_y = (float)selection.HitPosition.Y;
+			_z = (float)selection.HitPosition.Z;
+		}
 	}
 }
