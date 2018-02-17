@@ -101,11 +101,11 @@ namespace CarryCapacity
 			var isSneaking    = entity.Controls.Sneak;
 			var isEmptyHanded = entity.RightHandItemSlot.Empty;
 			var isCarrying    = entity.WatchedAttributes.HasAttribute(ATTRIBUTE_ID);
-			
 			if (!isSneaking || !isEmptyHanded || !isCarrying) return false;
 			
 			var carryingBlockCode = entity.WatchedAttributes.GetString(ATTRIBUTE_ID);
 			var carryingBlock     = world.GetBlock(new AssetLocation(carryingBlockCode));
+			if (carryingBlock == null) return false;
 			
 			var clickedBlock = world.BlockAccessor.GetBlock(selection.Position);
 			// If clicked block is replacable, check block below instead.
@@ -125,28 +125,73 @@ namespace CarryCapacity
 			// block placement using an item stack. Let's hope nothing breaks!
 			var stack = new ItemStack(carryingBlock);
 			if (!carryingBlock.TryPlaceBlock(world, player, stack, selection)) return false;
-			
 			entity.WatchedAttributes.RemoveAttribute(ATTRIBUTE_ID);
 			
-			// On the server, restore the block entity.
-			if ((world.Side == EnumAppSide.Server)
-				&& entity.Attributes.HasAttribute(ATTRIBUTE_ID)) {
-				
-				var blockEntityData = entity.Attributes.GetTreeAttribute(ATTRIBUTE_ID);
-				// Set the block entity's position to the new position.
-				// Without this, we get some funny behavior.
-				blockEntityData.SetInt("posx", selection.Position.X);
-				blockEntityData.SetInt("posy", selection.Position.Y);
-				blockEntityData.SetInt("posz", selection.Position.Z);
-				
-				var blockEntity = world.BlockAccessor.GetBlockEntity(selection.Position);
-				blockEntity.FromTreeAtributes(blockEntityData);
-				
-				entity.Attributes.RemoveAttribute(ATTRIBUTE_ID);
-				
-			}
+			RestoreBlockEntityData(entity, selection.Position);
 			
 			return true;
+		}
+		
+		public static void OnPlayerDeath(IServerPlayer player)
+		{
+			var entity = player.Entity;
+			var world  = entity.World;
+			
+			var isSneaking    = entity.Controls.Sneak;
+			var isEmptyHanded = entity.RightHandItemSlot.Empty;
+			var isCarrying    = entity.WatchedAttributes.HasAttribute(ATTRIBUTE_ID);
+			if (!isSneaking || !isEmptyHanded || !isCarrying) return;
+			
+			var carryingBlockCode = entity.WatchedAttributes.GetString(ATTRIBUTE_ID);
+			var carryingBlock     = world.GetBlock(new AssetLocation(carryingBlockCode));
+			if (carryingBlock == null) return;
+			
+			var testPos = player.Entity.Pos.AsBlockPos;
+			BlockPos firstEmpty  = null;
+			BlockPos groundEmpty = null;
+			// Test up to 10 blocks up and down, find
+			// a solid ground to place the block on.
+			for (var i = 0; i < 10; i++) {
+				var testBlock = world.BlockAccessor.GetBlock(testPos);
+				if (testBlock.IsReplacableBy(carryingBlock)) {
+					if (firstEmpty == null) {
+						if (i > 0) {
+							groundEmpty = testPos;
+							break;
+						} else firstEmpty = testPos;
+					}
+				} else if (firstEmpty != null) {
+					groundEmpty = testPos.Add(BlockFacing.UP);
+					break;
+				}
+			}
+			
+			var placedPos = groundEmpty ?? firstEmpty;
+			if (!world.BlockAccessor.IsValidPos(placedPos)) return;
+			
+			world.BlockAccessor.SetBlock((ushort)carryingBlock.Id, placedPos);
+			entity.WatchedAttributes.RemoveAttribute(ATTRIBUTE_ID);
+			RestoreBlockEntityData(entity, placedPos);
+		}
+		
+		
+		private static void RestoreBlockEntityData(
+			EntityPlayer entity, BlockPos position)
+		{
+			if ((entity.World.Side != EnumAppSide.Server)
+				|| !entity.Attributes.HasAttribute(ATTRIBUTE_ID)) return;
+			
+			var blockEntityData = entity.Attributes.GetTreeAttribute(ATTRIBUTE_ID);
+			// Set the block entity's position to the new position.
+			// Without this, we get some funny behavior.
+			blockEntityData.SetInt("posx", position.X);
+			blockEntityData.SetInt("posy", position.Y);
+			blockEntityData.SetInt("posz", position.Z);
+			
+			var blockEntity = entity.World.BlockAccessor.GetBlockEntity(position);
+			blockEntity.FromTreeAtributes(blockEntityData);
+			
+			entity.Attributes.RemoveAttribute(ATTRIBUTE_ID);
 		}
 	}
 }

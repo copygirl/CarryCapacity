@@ -36,8 +36,8 @@ namespace CarryCapacity
 			CLIENT_CHANNEL = api.Network.RegisterChannel(MOD_ID)
 				.RegisterMessageType(typeof(PlaceDownMessage));
 			
-			api.World.RegisterGameTickListener(
-				(delta) => BlockCarryable.OnClientPlayerUpdate(api.World.Player), 0);
+			api.World.RegisterGameTickListener((delta)
+				=> BlockCarryable.OnClientPlayerUpdate(api.World.Player), 0);
 			
 			CarryRenderer.Register(api);
 		}
@@ -47,6 +47,9 @@ namespace CarryCapacity
 			api.Network.RegisterChannel(MOD_ID)
 				.RegisterMessageType(typeof(PlaceDownMessage))
 				.SetMessageHandler<PlaceDownMessage>(BlockCarryable.OnPlaceDownMessage);
+			
+			api.Event.PlayerDeath((player, cause, source)
+				=> BlockCarryable.OnPlayerDeath(player));
 		}
 	}
 }
