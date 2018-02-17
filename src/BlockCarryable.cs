@@ -137,10 +137,7 @@ namespace CarryCapacity
 			var entity = player.Entity;
 			var world  = entity.World;
 			
-			var isSneaking    = entity.Controls.Sneak;
-			var isEmptyHanded = entity.RightHandItemSlot.Empty;
-			var isCarrying    = entity.WatchedAttributes.HasAttribute(ATTRIBUTE_ID);
-			if (!isSneaking || !isEmptyHanded || !isCarrying) return;
+			if (!entity.WatchedAttributes.HasAttribute(ATTRIBUTE_ID)) return;
 			
 			var carryingBlockCode = entity.WatchedAttributes.GetString(ATTRIBUTE_ID);
 			var carryingBlock     = world.GetBlock(new AssetLocation(carryingBlockCode));
