@@ -6,13 +6,13 @@
 			rotation: [ 0, 0, -90 ],
 			scale: 0.65,
 		} },
-		{ name: "Container" },
-		{ name: "HorizontalOrientable" },
+		{ name: "Container"},
+		{ name: "HorizontalOrientable" }
 	],
 	variantgroups: [
 		{ code:"side", loadFromProperties: "abstract/horizontalorientation" }
 	],
-	heldTpIdleAnimation: "holdinglargeanimal",
+	heldTpIdleAnimation: "holdunderarm",
 	creativeinventory: { "general": ["stationarybasket-north"], "decorative": ["stationarybasket-north"] },
 	shapebytype: {
 		"*-north": { base: "block/basket", rotateY: 0 },

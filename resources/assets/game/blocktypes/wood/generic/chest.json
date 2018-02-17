@@ -3,17 +3,19 @@
 	entityclass: "Chest",
 	behaviors: [
 		{ name: "Carryable", properties: {
-			translation: [ 0, 0, -0.0625 ],
-			rotation: [ 0, 90, 0 ],
+			translation: [ 0.0625, 0, 0 ],
+			rotation: [ 0, 180, 0 ],
 		} },
 		{ name: "Container" },
-		{ name: "HorizontalOrientable" },
+		{ name: "HorizontalOrientable", properties: {
+			dropBlockFace: "east"
+		} }
 	],
 	variantgroups: [
 		{ code:"side", loadFromProperties: "abstract/horizontalorientation" }
 	],
 	creativeinventory: { "general": ["chest-north"], "decorative": ["chest-north"] },
-	heldTpIdleAnimation: "holdinglargeanimal",
+	heldTpIdleAnimation: "holdunderarm",
 	shapebytype: {
 		"*-north": { base: "block/wood/chest", rotateY: 0 },
 		"*-east": { base: "block/wood/chest", rotateY: 270 },

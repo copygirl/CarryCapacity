@@ -51,7 +51,7 @@ namespace CarryCapacity
 			if (_cachedBlocks.TryGetValue(code, out var cached)) return cached;
 			
 			var block    = _api.World.GetBlock(new AssetLocation(code));
-			var behavior = block.GetBehavior(typeof(BlockCarryable));
+			var behavior = block.GetBehavior(typeof(BlockBehaviorCarryable));
 			if (behavior != null) {
 				
 				var meshData  = _api.Tesselator.GetDefaultBlockMesh(block);
@@ -67,20 +67,10 @@ namespace CarryCapacity
 					var scale = behavior.properties["scale"].AsFloat();
 					if (scale > 0) transform.Scale = scale;
 				}
-				
-				// FIXME: AsFloatArray() currently has an issue, simplify with next version!
+				// Method local utility functions, woooo!
 				void TryGetVec3f(JsonObject obj, ref Vec3f result) {
-					var array = obj.AsArray();
-					if (array?.Length != 3) return;
-					var floats = new float[3];
-					for (var i = 0; i < floats.Length; i++) {
-						var floatVal = array[i].AsFloat(float.NaN);
-						var intVal   = array[i].AsInt(int.MinValue);
-						if (!float.IsNaN(floatVal)) floats[i]  = floatVal;
-						else if (intVal > int.MinValue) floats[i] = intVal;
-						else return;
-					}
-					result = new Vec3f(floats);
+					var floats = obj.AsFloatArray();
+					if (floats != null) result = new Vec3f(floats);
 				}
 				
 				cached = new CachedCarryableBlock(mesh, textureID, transform);
@@ -112,7 +102,7 @@ namespace CarryCapacity
 				var isShadowPass = (stage != EnumRenderStage.Opaque);
 				
 				var renderApi = _api.Render;
-				var animator  = (BlendEntityAnimator)renderer.animator;
+				var animator  = (BlendEntityAnimator)renderer.curAnimator;
 				if (!animator.AttachmentPointByCode.TryGetValue("Back", out var pose)) return;
 				
 				Mat4f.Copy(_tmpMat, renderer.ModelMat);

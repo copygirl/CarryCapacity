@@ -48,8 +48,8 @@ namespace CarryCapacity
 				.RegisterMessageType(typeof(PlaceDownMessage))
 				.SetMessageHandler<PlaceDownMessage>(BlockCarryable.OnPlaceDownMessage);
 			
-			api.Event.PlayerDeath((player, cause, source)
-				=> BlockCarryable.OnPlayerDeath(player));
+			api.Event.PlayerDeath((player, source)
+				=> BlockBehaviorCarryable.OnPlayerDeath(player));
 		}
 	}
 }
