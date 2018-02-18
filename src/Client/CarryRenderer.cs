@@ -12,13 +12,6 @@ namespace CarryCapacity.Client
 		private static readonly float[] _tmpMat = Mat4f.Create();
 		private static readonly Vec3f _impliedOffset
 			= new Vec3f(0.0F, -0.6F, -0.5F);
-		private static readonly ModelTransform _defaultTransform
-			= new ModelTransform {
-				Translation = new Vec3f(0.0F, 0.0F, 0.0F),
-				Rotation    = new Vec3f(0.0F, 0.0F, 0.0F),
-				Origin      = new Vec3f(0.5F, 0.5F, 0.5F),
-				Scale       = 0.5F
-			};
 		
 		
 		private readonly Dictionary<int, CachedCarryableBlock> _cachedBlocks
@@ -53,24 +46,8 @@ namespace CarryCapacity.Client
 			var meshData  = API.Tesselator.GetDefaultBlockMesh(carried.Block);
 			var mesh      = API.Render.UploadMesh(meshData);
 			var textureID = API.BlockTextureAtlas.Positions[0].atlasTextureId;
-			var transform = _defaultTransform.Clone();
-			
-			// Load transform from behavior properties (or use default).
-			var behavior = carried.Block.GetBehavior(typeof(BlockBehaviorCarryable));
-			if (behavior != null) {
-				if (behavior.properties != null) {
-					TryGetVec3f(behavior.properties["translation"], ref transform.Translation);
-					TryGetVec3f(behavior.properties["rotation"], ref transform.Rotation);
-					TryGetVec3f(behavior.properties["origin"], ref transform.Origin);
-					var scale = behavior.properties["scale"].AsFloat();
-					if (scale > 0) transform.Scale = scale;
-				}
-				// Method local utility functions, woooo!
-				void TryGetVec3f(JsonObject obj, ref Vec3f result) {
-					var floats = obj.AsFloatArray();
-					if (floats != null) result = new Vec3f(floats);
-				}
-			}
+			var transform = carried.Block.GetBehaviorOrDefault(
+				BlockBehaviorCarryable.DEFAULT).Transform;
 			
 			cached = new CachedCarryableBlock(mesh, textureID, transform);
 			_cachedBlocks.Add(carried.Block.Id, cached);
