@@ -121,7 +121,6 @@ namespace CarryCapacity
 		public static CarriedBlock PickUp(IWorldAccessor world, BlockPos pos,
 		                                  bool checkIsCarryable = false)
 		{
-			world.Logger.Warning($"Carrying a { world.BlockAccessor.GetBlock(pos) }?");
 			var carried = Get(world, pos);
 			if (carried == null) return null;
 			

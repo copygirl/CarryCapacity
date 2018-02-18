@@ -30,7 +30,8 @@ namespace CarryCapacity.Handler
 				_timeHeldDown = 0.0F;
 				if (mouseDown) OnRightMousePressed?.Invoke();
 				else OnRightMouseReleased?.Invoke();
-			} else OnRightMouseHeld?.Invoke(_timeHeldDown += delta);
+			} else if (mouseDown)
+				OnRightMouseHeld?.Invoke(_timeHeldDown += delta);
 			_prevMouseDown = mouseDown;
 		}
 	}
