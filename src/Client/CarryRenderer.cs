@@ -5,7 +5,7 @@ using Vintagestory.API.Common;
 using Vintagestory.API.MathTools;
 using Vintagestory.GameContent;
 
-namespace CarryCapacity
+namespace CarryCapacity.Client
 {
 	public class CarryRenderer : IRenderer
 	{
@@ -20,22 +20,22 @@ namespace CarryCapacity
 				Scale       = 0.5F
 			};
 		
-		private readonly ICoreClientAPI _api;
-		private readonly Dictionary<string, CachedCarryableBlock> _cachedBlocks
-			= new Dictionary<string, CachedCarryableBlock>();
 		
-		public CarryRenderer(ICoreClientAPI api) => _api = api;
+		private readonly Dictionary<int, CachedCarryableBlock> _cachedBlocks
+			= new Dictionary<int, CachedCarryableBlock>();
 		
-		public static void Register(ICoreClientAPI api)
+		private ICoreClientAPI API { get; }
+		
+		public CarryRenderer(ICoreClientAPI api)
 		{
-			var renderer = new CarryRenderer(api);
-			
-			api.Event.RegisterRenderer(renderer, EnumRenderStage.Opaque);
-			api.Event.RegisterRenderer(renderer, EnumRenderStage.ShadowFar);
-			api.Event.RegisterRenderer(renderer, EnumRenderStage.ShadowNear);
+			API = api;
+			api.Event.RegisterRenderer(this, EnumRenderStage.Opaque);
+			api.Event.RegisterRenderer(this, EnumRenderStage.ShadowFar);
+			api.Event.RegisterRenderer(this, EnumRenderStage.ShadowNear);
 		}
 		
-		public class CachedCarryableBlock
+		
+		private class CachedCarryableBlock
 		{
 			public MeshRef Mesh { get; }
 			public int TextureID { get; }
@@ -45,21 +45,19 @@ namespace CarryCapacity
 				{ Mesh = mesh; TextureID = textureID; Transform = transform; }
 		}
 		
-		public CachedCarryableBlock GetCachedBlock(string code)
+		private CachedCarryableBlock GetCachedBlock(CarriedBlock carried)
 		{
-			if (code == null) return null;
-			if (_cachedBlocks.TryGetValue(code, out var cached)) return cached;
+			if (carried == null) return null;
+			if (_cachedBlocks.TryGetValue(carried.Block.Id, out var cached)) return cached;
 			
-			var block    = _api.World.GetBlock(new AssetLocation(code));
-			var behavior = block.GetBehavior(typeof(BlockBehaviorCarryable));
+			var meshData  = API.Tesselator.GetDefaultBlockMesh(carried.Block);
+			var mesh      = API.Render.UploadMesh(meshData);
+			var textureID = API.BlockTextureAtlas.Positions[0].atlasTextureId;
+			var transform = _defaultTransform.Clone();
+			
+			// Load transform from behavior properties (or use default).
+			var behavior = carried.Block.GetBehavior(typeof(BlockBehaviorCarryable));
 			if (behavior != null) {
-				
-				var meshData  = _api.Tesselator.GetDefaultBlockMesh(block);
-				var mesh      = _api.Render.UploadMesh(meshData);
-				var textureID = _api.BlockTextureAtlas.Positions[0].atlasTextureId;
-				
-				var transform = _defaultTransform.Clone();
-				// Load transform from behavior properties (or use default).
 				if (behavior.properties != null) {
 					TryGetVec3f(behavior.properties["translation"], ref transform.Translation);
 					TryGetVec3f(behavior.properties["rotation"], ref transform.Rotation);
@@ -72,14 +70,13 @@ namespace CarryCapacity
 					var floats = obj.AsFloatArray();
 					if (floats != null) result = new Vec3f(floats);
 				}
-				
-				cached = new CachedCarryableBlock(mesh, textureID, transform);
-				
 			}
 			
-			_cachedBlocks.Add(code, cached);
+			cached = new CachedCarryableBlock(mesh, textureID, transform);
+			_cachedBlocks.Add(carried.Block.Id, cached);
 			return cached;
 		}
+		
 		
 		// IRenderer implementation
 		
@@ -88,20 +85,20 @@ namespace CarryCapacity
 		
 		public void OnRenderFrame(float deltaTime, EnumRenderStage stage)
 		{
-			foreach (var player in _api.World.AllPlayers) {
+			foreach (var player in API.World.AllPlayers) {
 				// Don't render anything on the client player if they're in first person.
-				if ((_api.World.Player.CameraMode == EnumCameraMode.FirstPerson)
-					&& (player == _api.World.Player)) continue;
+				if ((API.World.Player.CameraMode == EnumCameraMode.FirstPerson)
+					&& (player == API.World.Player)) continue;
 				
-				var entity = player.Entity;
-				var code   = entity.WatchedAttributes.GetString(BlockCarryable.ATTRIBUTE_ID);
-				var cached = GetCachedBlock(code);
+				var entity  = player.Entity;
+				var carried = entity.GetCarried();
+				var cached  = GetCachedBlock(carried);
 				if (cached == null) continue;
 				
 				var renderer     = (EntityShapeRenderer)entity.Renderer;
 				var isShadowPass = (stage != EnumRenderStage.Opaque);
 				
-				var renderApi = _api.Render;
+				var renderApi = API.Render;
 				var animator  = (BlendEntityAnimator)renderer.curAnimator;
 				if (!animator.AttachmentPointByCode.TryGetValue("Back", out var pose)) return;
 				
@@ -112,7 +109,7 @@ namespace CarryCapacity
 				var mat  = pose.Pose.AnimModelMatrix;
 				var orig = Mat4f.Create();
 				for (int i = 0; i < 16; i++)
-					orig[i] = (float)_api.Render.CameraMatrixOrigin[i];
+					orig[i] = (float)API.Render.CameraMatrixOrigin[i];
 				
 				if (!isShadowPass) Mat4f.Mul(_tmpMat, orig, _tmpMat);
 				Mat4f.Mul(_tmpMat, _tmpMat, mat);
@@ -145,12 +142,12 @@ namespace CarryCapacity
 				if (!isShadowPass)
 					prog.ModelViewMatrix = _tmpMat;
 				else {
-					Mat4f.Mul(_tmpMat, _api.Render.CurrentShadowProjectionMatrix, _tmpMat);
-					_api.Render.CurrentActiveShader.UniformMatrix("mvpMatrix", _tmpMat);
-					_api.Render.CurrentActiveShader.Uniform("origin", renderer.OriginPos);
+					Mat4f.Mul(_tmpMat, API.Render.CurrentShadowProjectionMatrix, _tmpMat);
+					API.Render.CurrentActiveShader.UniformMatrix("mvpMatrix", _tmpMat);
+					API.Render.CurrentActiveShader.Uniform("origin", renderer.OriginPos);
 				}
 				
-				_api.Render.RenderMesh(cached.Mesh);
+				API.Render.RenderMesh(cached.Mesh);
 				
 				prog?.Stop();
 			}
@@ -159,7 +156,7 @@ namespace CarryCapacity
 		public void Dispose()
 		{
 			foreach (var cached in _cachedBlocks.Values)
-				_api.Render.DeleteMesh(cached.Mesh);
+				API.Render.DeleteMesh(cached.Mesh);
 			_cachedBlocks.Clear();
 		}
 	}
