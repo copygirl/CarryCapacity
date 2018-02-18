@@ -12,10 +12,10 @@ my Minecraft mod [Wearable Backpacks][WBs].
 
 ## Usage
 
-To carry a supported block or container, point your cursor at it and right
-click while sneaking with an empty hand. To place it back down, point your
-cursor on top of a solid block and, again, right click it while sneaking with
-an empty hand.
+To carry a supported block or container, point your cursor at it and **hold
+right click** while sneaking with an empty hand. To place it back down, point
+your cursor on top of a solid block and, again, hold right click it while
+sneaking with an empty hand.
 
 ## Download
 
@@ -34,6 +34,7 @@ behaviors: [
     rotation: [ 0, 0, 0 ],
     origin: [ 0, 0, 0 ],
     scale: 0.5,
+    interactDelay: 0.5,
   } },
   { name: "Container" },
   ...
