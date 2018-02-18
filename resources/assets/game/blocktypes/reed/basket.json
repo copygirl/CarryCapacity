@@ -5,6 +5,7 @@
 		{ name: "Carryable", properties: {
 			rotation: [ 0, 0, -90 ],
 			scale: 0.65,
+			interactDelay: 0.2,
 		} },
 		{ name: "Container"},
 		{ name: "HorizontalOrientable" }

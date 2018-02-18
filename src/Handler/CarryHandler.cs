@@ -11,13 +11,20 @@ namespace CarryCapacity.Handler
 	/// </summary>
 	public class CarryHandler
 	{
+		private CurrentAction _action   = CurrentAction.None;
+		private BlockPos _selectedBlock = null;
+		
 		private CarryCapacityMod Mod { get; }
 		
 		public CarryHandler(CarryCapacityMod mod)
 			=> Mod = mod;
 		
 		public void InitClient()
-			=> Mod.MOUSE_HANDLER.OnRightMousePressed += OnRightClick;
+		{
+			Mod.MOUSE_HANDLER.OnRightMousePressed  += OnPress;
+			Mod.MOUSE_HANDLER.OnRightMouseHeld     += OnHold;
+			Mod.MOUSE_HANDLER.OnRightMouseReleased += OnRelease;
+		}
 		
 		public void InitServer()
 		{
@@ -27,31 +34,63 @@ namespace CarryCapacity.Handler
 		}
 		
 		
-		public void OnRightClick()
+		public void OnPress()
 		{
+			var player  = Mod.CLIENT_API.World.Player;
+			var carried = player.Entity.GetCarried();
+			_selectedBlock = player.CurrentBlockSelection?.Position;
+			if (_selectedBlock == null) return;
+			_action = (carried == null) ? CurrentAction.PickUp : CurrentAction.PlaceDown;
+			OnHold(0.0F);
+		}
+		
+		public void OnHold(float time)
+		{
+			if (_action == CurrentAction.None) return;
 			var player = Mod.CLIENT_API.World.Player;
+			
 			// TODO: Don't run any of this while in a GUI.
 			// TODO: Only allow close blocks to be picked up.
+			// TODO: Don't allow the block underneath to change?
 			
 			var isSneaking    = player.Entity.Controls.Sneak;
 			var isEmptyHanded = player.Entity.RightHandItemSlot.Empty;
 			// Only pick up or place down if sneaking and empty handed.
-			if (!isSneaking || !isEmptyHanded) return;
+			if (!isSneaking || !isEmptyHanded) { OnRelease(); return; }
 			
+			// Make sure the player is still looking at the same block.
 			var selection = player.CurrentBlockSelection;
-			if (selection == null) return; // Not pointing at any block.
+			if (!_selectedBlock.Equals(selection?.Position)) { OnRelease(); return; }
 			
 			var carried = player.Entity.GetCarried();
-			if (carried == null) {
-				// If not currently carrying a block, see if we can pick one up.
-				if (player.Entity.Carry(selection.Position))
-					Mod.CLIENT_CHANNEL.SendPacket(new PickUpMessage(selection.Position));
-			} else {
-				// If already carrying a block, see if we can place it down.
-				if (PlaceDown(player, carried, selection))
-					Mod.CLIENT_CHANNEL.SendPacket(new PlaceDownMessage(selection));
+			// Ensure the player hasn't in the meantime
+			// picked up / placed down something somehow.
+			if ((_action == CurrentAction.PickUp) == (carried != null)) { OnRelease(); return; }
+			
+			// Get the block behavior from either the block
+			// to be picked up or the currently carried block.
+			var behavior = ((_action == CurrentAction.PickUp)
+					? player.Entity.World.BlockAccessor.GetBlock(_selectedBlock)
+					: carried.Block
+				).GetBehaviorOrDefault(BlockBehaviorCarryable.DEFAULT);
+			
+			if (time >= behavior.InteractDelay) {
+				if (_action == CurrentAction.PickUp) {
+					// If not currently carrying a block, see if we can pick one up.
+					if (player.Entity.Carry(selection.Position))
+						Mod.CLIENT_CHANNEL.SendPacket(new PickUpMessage(selection.Position));
+				} else {
+					// If already carrying a block, see if we can place it down.
+					if (PlaceDown(player, carried, selection))
+						Mod.CLIENT_CHANNEL.SendPacket(new PlaceDownMessage(selection));
+				}
+				OnRelease();
 			}
 		}
+		
+		public void OnRelease()
+			=> _action = CurrentAction.None;
+		
 		
 		public static void OnPickUpMessage(IPlayer player, PickUpMessage message)
 		{
@@ -104,7 +143,6 @@ namespace CarryCapacity.Handler
 			return player.PlaceCarried(selection);
 		}
 		
-		
 		/// <summary> Called when a player picks up or places down an invalid block,
 		///           requiring it to get notified about the action being rejected. </summary>
 		private static void InvalidCarry(IPlayer player, BlockPos pos)
@@ -113,6 +151,13 @@ namespace CarryCapacity.Handler
 			// https://gist.github.com/copygirl/a29cfbdb49ed25fcf7e1afdf6b3a4018
 			//player.Entity.World.BlockAccessor.MarkBlockDirty(pos);
 			//player.Entity.WatchedAttributes.MarkPathDirty(CarriedBlock.ATTRIBUTE_ID);
+		}
+		
+		private enum CurrentAction
+		{
+			None,
+			PickUp,
+			PlaceDown
 		}
 	}
 }

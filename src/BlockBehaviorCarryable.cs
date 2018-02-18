@@ -22,21 +22,31 @@ namespace CarryCapacity
 				Scale       = 0.5F
 			};
 		
+		public float InteractDelay { get; private set; } = 0.5F;
+		
 		public BlockBehaviorCarryable(Block block)
 			: base(block) {  }
 		
 		
 		public override void Initialize(JsonObject properties)
 		{
-			void TryGetVec3f(ref Vec3f value, JsonObject obj) {
-				var floats = obj.AsFloatArray();
-				if (floats?.Length == 3) value = new Vec3f(floats);
+			bool TryGetFloat(string key, out float result) {
+				result = properties[key].AsFloat(float.NaN);
+				return !float.IsNaN(result);
 			}
-			TryGetVec3f(ref Transform.Translation , properties["translation"]);
-			TryGetVec3f(ref Transform.Rotation    , properties["rotation"]);
-			TryGetVec3f(ref Transform.Origin      , properties["origin"]);
-			var scale = properties["scale"].AsFloat();
-			if (scale > 0) Transform.Scale = scale;
+			bool TryGetVec3f(string key, out Vec3f result) {
+				var floats  = properties[key].AsFloatArray();
+				var success = (floats?.Length == 3);
+				result = success ? new Vec3f(floats) : null;
+				return success;
+			}
+			
+			if (TryGetVec3f("translation" , out var t)) Transform.Translation = t;
+			if (TryGetVec3f("rotation"    , out var r)) Transform.Rotation = r;
+			if (TryGetVec3f("origin"      , out var o)) Transform.Origin = o;
+			if (TryGetFloat("scale"       , out var s)) Transform.Scale = s;
+			
+			if (TryGetFloat("interactDelay", out var d)) InteractDelay = d;
 		}
 		
 		public override bool OnPlayerPlacedBlockInteract(
