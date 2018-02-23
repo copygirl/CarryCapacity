@@ -42,8 +42,7 @@ namespace CarryCapacity
 		
 		public override void Start(ICoreAPI api)
 		{
-			api.RegisterBlockBehavior(BlockBehaviorCarryable.NAME,
-				typeof(BlockBehaviorCarryable));
+			api.Register<BlockBehaviorCarryable>();
 			
 			CARRY_HANDLER = new CarryHandler(this);
 			

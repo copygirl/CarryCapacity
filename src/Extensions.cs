@@ -11,5 +11,10 @@ namespace CarryCapacity
 		public static T GetBehaviorOrDefault<T>(this Block block, T @default)
 			where T : BlockBehavior
 				=> block.GetBehavior<T>() ?? @default;
+		
+		public static void Register<T>(this ICoreAPI api)
+			where T : BlockBehavior
+				=> api.RegisterBlockBehaviorClass(
+					(string)typeof(T).GetProperty("NAME").GetValue(null), typeof(T));
 	}
 }

@@ -49,7 +49,7 @@ namespace CarryCapacity
 			if (TryGetFloat("interactDelay", out var d)) InteractDelay = d;
 		}
 		
-		public override bool OnPlayerPlacedBlockInteract(
+		public override bool OnPlayerBlockInteract(
 			IWorldAccessor world, IPlayer byPlayer,
 			BlockSelection blockSel, ref EnumHandling handling)
 		{
