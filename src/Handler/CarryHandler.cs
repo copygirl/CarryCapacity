@@ -21,14 +21,14 @@ namespace CarryCapacity.Handler
 		
 		public void InitClient()
 		{
-			Mod.MOUSE_HANDLER.OnRightMousePressed  += OnPress;
-			Mod.MOUSE_HANDLER.OnRightMouseHeld     += OnHold;
-			Mod.MOUSE_HANDLER.OnRightMouseReleased += OnRelease;
+			Mod.MouseHandler.OnRightMousePressed  += OnPress;
+			Mod.MouseHandler.OnRightMouseHeld     += OnHold;
+			Mod.MouseHandler.OnRightMouseReleased += OnRelease;
 		}
 		
 		public void InitServer()
 		{
-			Mod.SERVER_CHANNEL
+			Mod.ServerChannel
 				.SetMessageHandler<PickUpMessage>(OnPickUpMessage)
 				.SetMessageHandler<PlaceDownMessage>(OnPlaceDownMessage);
 		}
@@ -36,7 +36,7 @@ namespace CarryCapacity.Handler
 		
 		public void OnPress()
 		{
-			var player  = Mod.CLIENT_API.World.Player;
+			var player  = Mod.ClientAPI.World.Player;
 			var carried = player.Entity.GetCarried();
 			_selectedBlock = player.CurrentBlockSelection?.Position;
 			if (_selectedBlock == null) return;
@@ -47,7 +47,7 @@ namespace CarryCapacity.Handler
 		public void OnHold(float time)
 		{
 			if (_action == CurrentAction.None) return;
-			var player = Mod.CLIENT_API.World.Player;
+			var player = Mod.ClientAPI.World.Player;
 			
 			// TODO: Don't run any of this while in a GUI.
 			// TODO: Only allow close blocks to be picked up.
@@ -78,11 +78,11 @@ namespace CarryCapacity.Handler
 				if (_action == CurrentAction.PickUp) {
 					// If not currently carrying a block, see if we can pick one up.
 					if (player.Entity.Carry(selection.Position))
-						Mod.CLIENT_CHANNEL.SendPacket(new PickUpMessage(selection.Position));
+						Mod.ClientChannel.SendPacket(new PickUpMessage(selection.Position));
 				} else {
 					// If already carrying a block, see if we can place it down.
 					if (PlaceDown(player, carried, selection))
-						Mod.CLIENT_CHANNEL.SendPacket(new PlaceDownMessage(selection));
+						Mod.ClientChannel.SendPacket(new PlaceDownMessage(selection));
 				}
 				OnRelease();
 			}

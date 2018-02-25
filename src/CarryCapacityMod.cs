@@ -26,52 +26,52 @@ namespace CarryCapacity
 		
 		
 		// Client
-		public ICoreClientAPI CLIENT_API { get; private set; }
-		public IClientNetworkChannel CLIENT_CHANNEL { get; private set; }
-		public CustomMouseHandler MOUSE_HANDLER { get; private set; }
-		public CarryRenderer RENDERER { get; private set; }
+		public ICoreClientAPI ClientAPI { get; private set; }
+		public IClientNetworkChannel ClientChannel { get; private set; }
+		public CustomMouseHandler MouseHandler { get; private set; }
+		public EntityCarryRenderer EntityCarryRenderer { get; private set; }
 		
 		// Server
-		public ICoreServerAPI SERVER_API { get; private set; }
-		public IServerNetworkChannel SERVER_CHANNEL { get; private set; }
-		public DeathHandler DEATH_HANDLER { get; private set; }
+		public ICoreServerAPI ServerAPI { get; private set; }
+		public IServerNetworkChannel ServerChannel { get; private set; }
+		public DeathHandler DeathHandler { get; private set; }
 		
 		// Common
-		public CarryHandler CARRY_HANDLER { get; private set; }
+		public CarryHandler CarryHandler { get; private set; }
 		
 		
 		public override void Start(ICoreAPI api)
 		{
 			api.Register<BlockBehaviorCarryable>();
 			
-			CARRY_HANDLER = new CarryHandler(this);
+			CarryHandler = new CarryHandler(this);
 			
 			base.Start(api);
 		}
 		
 		public override void StartClientSide(ICoreClientAPI api)
 		{
-			CLIENT_API     = api;
-			CLIENT_CHANNEL = api.Network.RegisterChannel(MOD_ID)
+			ClientAPI     = api;
+			ClientChannel = api.Network.RegisterChannel(MOD_ID)
 				.RegisterMessageType(typeof(PickUpMessage))
 				.RegisterMessageType(typeof(PlaceDownMessage));
 			
-			MOUSE_HANDLER = new CustomMouseHandler(api);
-			RENDERER      = new CarryRenderer(api);
+			MouseHandler        = new CustomMouseHandler(api);
+			EntityCarryRenderer = new EntityCarryRenderer(api);
 			
-			CARRY_HANDLER.InitClient();
+			CarryHandler.InitClient();
 		}
 		
 		public override void StartServerSide(ICoreServerAPI api)
 		{
-			SERVER_API     = api;
-			SERVER_CHANNEL = api.Network.RegisterChannel(MOD_ID)
+			ServerAPI     = api;
+			ServerChannel = api.Network.RegisterChannel(MOD_ID)
 				.RegisterMessageType(typeof(PickUpMessage))
 				.RegisterMessageType(typeof(PlaceDownMessage));
 			
-			DEATH_HANDLER = new DeathHandler(api);
+			DeathHandler = new DeathHandler(api);
 			
-			CARRY_HANDLER.InitServer();
+			CarryHandler.InitServer();
 		}
 	}
 }

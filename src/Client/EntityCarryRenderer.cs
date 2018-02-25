@@ -7,7 +7,7 @@ using Vintagestory.GameContent;
 
 namespace CarryCapacity.Client
 {
-	public class CarryRenderer : IRenderer
+	public class EntityCarryRenderer : IRenderer
 	{
 		private static readonly float[] _tmpMat = Mat4f.Create();
 		private static readonly Vec3f _impliedOffset
@@ -19,7 +19,7 @@ namespace CarryCapacity.Client
 		
 		private ICoreClientAPI API { get; }
 		
-		public CarryRenderer(ICoreClientAPI api)
+		public EntityCarryRenderer(ICoreClientAPI api)
 		{
 			API = api;
 			api.Event.RegisterRenderer(this, EnumRenderStage.Opaque);
