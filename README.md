@@ -34,7 +34,7 @@ behaviors: [
     rotation: [ 0, 0, 0 ],
     origin: [ 0, 0, 0 ],
     scale: 0.5,
-    interactDelay: 0.5,
+    interactDelay: 0.8,
   } },
   { name: "Container" },
   ...

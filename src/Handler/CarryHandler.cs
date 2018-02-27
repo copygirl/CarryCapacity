@@ -10,6 +10,8 @@ namespace CarryCapacity.Handler
 	/// </summary>
 	public class CarryHandler
 	{
+		public const float PLACE_SPEED_MODIFIER = 0.75F;
+		
 		private CurrentAction _action   = CurrentAction.None;
 		private BlockPos _selectedBlock = null;
 		
@@ -82,7 +84,11 @@ namespace CarryCapacity.Handler
 					: carried.Block
 				).GetBehaviorOrDefault(BlockBehaviorCarryable.DEFAULT);
 			
-			var progress = (time / behavior.InteractDelay);
+			var requiredTime = behavior.InteractDelay;
+			if (_action == CurrentAction.PlaceDown)
+				requiredTime *= PLACE_SPEED_MODIFIER;
+			
+			var progress = (time / requiredTime);
 			Mod.HudOverlayRenderer.CircleProgress = progress;
 			if (progress <= 1.0F) return;
 			

@@ -22,7 +22,7 @@ namespace CarryCapacity
 				Scale       = 0.5F
 			};
 		
-		public float InteractDelay { get; private set; } = 0.5F;
+		public float InteractDelay { get; private set; } = 0.8F;
 		
 		public BlockBehaviorCarryable(Block block)
 			: base(block) {  }
