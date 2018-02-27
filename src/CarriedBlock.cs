@@ -124,15 +124,12 @@ namespace CarryCapacity
 			var carried = Get(world, pos);
 			if (carried == null) return null;
 			
-			// If we care, make sure the block implement the Carryable behavior.
-			if (checkIsCarryable && !carried.Block.HasBehavior(
-				typeof(BlockBehaviorCarryable))) return null;
+			if (checkIsCarryable && !carried.Block.IsCarryable()) return null;
 			
 			world.BlockAccessor.RemoveBlockEntity(pos);
 			world.BlockAccessor.SetBlock(0, pos);
 			return carried;
 		}
-		
 		
 		/// <summary>
 		///   Attempts to place down a <see cref="CarriedBlock"/> at the
@@ -178,6 +175,14 @@ namespace CarryCapacity
 	
 	public static class CarriedBlockExtensions
 	{
+		/// <summary>
+		///   Returns whether the specified block can be carried.
+		///   Checks if <see cref="BlockBehaviorCarryable"/> is present.
+		/// </summary>
+		public static bool IsCarryable(this Block block)
+			=> block.HasBehavior<BlockBehaviorCarryable>();
+		
+		
 		/// <summary> Returns the <see cref="CarriedBlock"/>
 		///           this entity is carrying, or null of none. </summary>
 		/// <example cref="ArgumentNullException"> Thrown if entity or pos is null. </exception>

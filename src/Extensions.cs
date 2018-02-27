@@ -4,6 +4,10 @@ namespace CarryCapacity
 {
 	public static class Extensions
 	{
+		public static bool HasBehavior<T>(this Block block)
+			where T : BlockBehavior
+				=> block.HasBehavior(typeof(T));
+		
 		public static T GetBehavior<T>(this Block block)
 			where T : BlockBehavior
 				=> (T)block.GetBehavior(typeof(T));

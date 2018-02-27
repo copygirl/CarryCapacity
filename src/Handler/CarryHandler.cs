@@ -5,9 +5,8 @@ using Vintagestory.API.MathTools;
 namespace CarryCapacity.Handler
 {
 	/// <summary>
-	///   Takes care of core CarryCapacity handling, such
-	///   as listening to events, picking up and placing
-	///   blocks, as well as sending and handling messages.
+	///   Takes care of core CarryCapacity handling, such as listening to events,
+	///   picking up and placing blocks, as well as sending and handling messages.
 	/// </summary>
 	public class CarryHandler
 	{
@@ -36,11 +35,20 @@ namespace CarryCapacity.Handler
 		
 		public void OnPress()
 		{
-			var player  = Mod.ClientAPI.World.Player;
-			var carried = player.Entity.GetCarried();
-			_selectedBlock = player.CurrentBlockSelection?.Position;
+			var world     = Mod.ClientAPI.World;
+			var player    = world.Player;
+			var carried   = player.Entity.GetCarried();
+			var selection = player.CurrentBlockSelection;
+			_selectedBlock = selection?.Position;
 			if (_selectedBlock == null) return;
-			_action = (carried == null) ? CurrentAction.PickUp : CurrentAction.PlaceDown;
+			if (carried == null) {
+				// Pick up a block. Ensure it's carryable.
+				if (!world.BlockAccessor.GetBlock(_selectedBlock).IsCarryable()) return;
+				_action = CurrentAction.PickUp;
+			} else {
+				if (!CanPlace(world, selection, carried)) return;
+				_action = CurrentAction.PlaceDown;
+			}
 			OnHold(0.0F);
 		}
 		
@@ -74,22 +82,27 @@ namespace CarryCapacity.Handler
 					: carried.Block
 				).GetBehaviorOrDefault(BlockBehaviorCarryable.DEFAULT);
 			
-			if (time >= behavior.InteractDelay) {
-				if (_action == CurrentAction.PickUp) {
-					// If not currently carrying a block, see if we can pick one up.
-					if (player.Entity.Carry(selection.Position))
-						Mod.ClientChannel.SendPacket(new PickUpMessage(selection.Position));
-				} else {
-					// If already carrying a block, see if we can place it down.
-					if (PlaceDown(player, carried, selection))
-						Mod.ClientChannel.SendPacket(new PlaceDownMessage(selection));
-				}
-				OnRelease();
+			var progress = (time / behavior.InteractDelay);
+			Mod.HudOverlayRenderer.CircleProgress = progress;
+			if (progress <= 1.0F) return;
+			
+			if (_action == CurrentAction.PickUp) {
+				// If not currently carrying a block, see if we can pick one up.
+				if (player.Entity.Carry(selection.Position))
+					Mod.ClientChannel.SendPacket(new PickUpMessage(selection.Position));
+			} else {
+				// If already carrying a block, see if we can place it down.
+				if (PlaceDown(player, carried, selection))
+					Mod.ClientChannel.SendPacket(new PlaceDownMessage(selection));
 			}
+			OnRelease();
 		}
 		
 		public void OnRelease()
-			=> _action = CurrentAction.None;
+		{
+			_action = CurrentAction.None;
+			Mod.HudOverlayRenderer.CircleVisible = false;
+		}
 		
 		
 		public static void OnPickUpMessage(IPlayer player, PickUpMessage message)
@@ -118,27 +131,35 @@ namespace CarryCapacity.Handler
 					InvalidCarry(player, message.Selection.Position);
 		}
 		
+		public static bool CanPlace(IWorldAccessor world, BlockSelection selection,
+		                            CarriedBlock carried)
+		{
+			var clickedBlock = world.BlockAccessor.GetBlock(selection.Position);
+			// If clicked block is replacable, check block below instead.
+			if (clickedBlock.IsReplacableBy(carried.Block)) {
+				clickedBlock = world.BlockAccessor.GetBlock(selection.Position.DownCopy());
+			// Otherwise make sure that the block was clicked on the top side.
+			} else if (selection.Face != BlockFacing.UP) return false;
+			return clickedBlock.SideSolid[BlockFacing.UP.Index];
+		}
+		
 		public static bool PlaceDown(IPlayer player, CarriedBlock carried,
 		                             BlockSelection selection)
 		{
+			if (!CanPlace(player.Entity.World, selection, carried)) return false;
+			var clickedBlock = player.Entity.World.BlockAccessor.GetBlock(selection.Position);
+			
 			// Clone the selection, because we don't
 			// want to affect what is sent to the server.
 			selection = selection.Clone();
 			
-			var blocks = player.Entity.World.BlockAccessor;
-			var clickedBlock = blocks.GetBlock(selection.Position);
-			// If clicked block is replacable, check block below instead.
 			if (clickedBlock.IsReplacableBy(carried.Block)) {
 				selection.Face = BlockFacing.UP;
-				clickedBlock   = blocks.GetBlock(selection.Position.DownCopy());
-			// Otherwise make sure that the block was clicked on the top side.
-			} else if (selection.Face == BlockFacing.UP) {
+				selection.HitPosition.Y = 1.0;
+			} else {
 				selection.Position.Up();
 				selection.DidOffset = true;
-			} else return false;
-			
-			// And also that the clicked block is solid on top.
-			if (!clickedBlock.SideSolid[BlockFacing.UP.Index]) return false;
+			}
 			
 			return player.PlaceCarried(selection);
 		}

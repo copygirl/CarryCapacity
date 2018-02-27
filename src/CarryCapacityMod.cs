@@ -30,6 +30,7 @@ namespace CarryCapacity
 		public IClientNetworkChannel ClientChannel { get; private set; }
 		public CustomMouseHandler MouseHandler { get; private set; }
 		public EntityCarryRenderer EntityCarryRenderer { get; private set; }
+		public HudOverlayRenderer HudOverlayRenderer { get; private set; }
 		
 		// Server
 		public ICoreServerAPI ServerAPI { get; private set; }
@@ -58,6 +59,7 @@ namespace CarryCapacity
 			
 			MouseHandler        = new CustomMouseHandler(api);
 			EntityCarryRenderer = new EntityCarryRenderer(api);
+			HudOverlayRenderer  = new HudOverlayRenderer(api);
 			
 			CarryHandler.InitClient();
 		}
