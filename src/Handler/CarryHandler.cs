@@ -147,10 +147,8 @@ namespace CarryCapacity.Handler
 		///           requiring it to get notified about the action being rejected. </summary>
 		private static void InvalidCarry(IPlayer player, BlockPos pos)
 		{
-			// FIXME: This is problematic :(
-			// https://gist.github.com/copygirl/a29cfbdb49ed25fcf7e1afdf6b3a4018
-			//player.Entity.World.BlockAccessor.MarkBlockDirty(pos);
-			//player.Entity.WatchedAttributes.MarkPathDirty(CarriedBlock.ATTRIBUTE_ID);
+			player.Entity.World.BlockAccessor.MarkBlockDirty(pos);
+			player.Entity.WatchedAttributes.MarkPathDirty(CarriedBlock.ATTRIBUTE_ID);
 		}
 		
 		private enum CurrentAction

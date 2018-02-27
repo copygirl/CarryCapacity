@@ -14,7 +14,7 @@
 	variantgroups: [
 		{ code:"side", loadFromProperties: "abstract/horizontalorientation" }
 	],
-	creativeinventory: { "general": ["chest-north"], "decorative": ["chest-north"] },
+	creativeinventory: { "general": ["chest-east"], "decorative": ["chest-east"] },
 	heldTpIdleAnimation: "holdunderarm",
 	shapebytype: {
 		"*-north": { base: "block/wood/chest", rotateY: 0 },
