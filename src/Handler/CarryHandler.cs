@@ -66,16 +66,19 @@ namespace CarryCapacity.Handler
 			var isSneaking    = player.Entity.Controls.Sneak;
 			var isEmptyHanded = player.Entity.RightHandItemSlot.Empty;
 			// Only pick up or place down if sneaking and empty handed.
-			if (!isSneaking || !isEmptyHanded) { OnRelease(); return; }
+			if (!isSneaking || !isEmptyHanded)
+				{ OnRelease(); return; }
 			
 			// Make sure the player is still looking at the same block.
 			var selection = player.CurrentBlockSelection;
-			if (!_selectedBlock.Equals(selection?.Position)) { OnRelease(); return; }
+			if (!_selectedBlock.Equals(selection?.Position))
+				{ OnRelease(); return; }
 			
 			var carried = player.Entity.GetCarried();
 			// Ensure the player hasn't in the meantime
 			// picked up / placed down something somehow.
-			if ((_action == CurrentAction.PickUp) == (carried != null)) { OnRelease(); return; }
+			if ((_action == CurrentAction.PickUp) == (carried != null))
+				{ OnRelease(); return; }
 			
 			// Get the block behavior from either the block
 			// to be picked up or the currently carried block.

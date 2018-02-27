@@ -201,7 +201,9 @@ namespace CarryCapacity
 			if (CarriedBlock.Get(entity) != null) return false;
 			var carried = CarriedBlock.PickUp(entity.World, pos, checkIsCarryable);
 			if (carried == null) return false;
+			
 			carried.Set(entity);
+			PlaySound(entity, carried, pos);
 			return true;
 		}
 		
@@ -223,10 +225,12 @@ namespace CarryCapacity
 			// Now try placing the block. Just going to utilize the default
 			// block placement using an ItemStack. Let's hope nothing breaks!
 			var stack = new ItemStack(carried.Block);
+			var pos   = selection.Position;
 			if (!carried.Block.TryPlaceBlock(world, player, stack, selection)) return false;
-			carried.RestoreBlockEntityData(world, selection.Position);
+			carried.RestoreBlockEntityData(world, pos);
 			
 			CarriedBlock.Remove(player.Entity);
+			PlaySound(player.Entity, carried, pos);
 			return true;
 		}
 		
@@ -246,7 +250,26 @@ namespace CarryCapacity
 			carried.RestoreBlockEntityData(entity.World, pos);
 			
 			CarriedBlock.Remove(entity);
+			PlaySound(entity, carried, pos);
 			return true;
+		}
+		
+		
+		private static void PlaySound(IEntity entity, CarriedBlock carried, BlockPos pos)
+		{
+			const float SOUND_RANGE  = 16.0F;
+			const float SOUND_VOLUME = 0.8F;
+			
+			if (carried.Block.Sounds.Place == null) return;
+			
+			var player = (entity.World.Side == EnumAppSide.Server)
+					&& (entity is IEntityPlayer entityPlayer)
+				? entity.World.PlayerByUid(entityPlayer.PlayerUID)
+				: null;
+			
+			entity.World.PlaySoundAt(carried.Block.Sounds.Place,
+				pos.X + 0.5, pos.Y + 0.25, pos.Z + 0.5, player,
+				range: SOUND_RANGE, volume: SOUND_VOLUME);
 		}
 	}
 }
