@@ -48,6 +48,8 @@ namespace CarryCapacity.Handler
 				if (!world.BlockAccessor.GetBlock(_selectedBlock).IsCarryable()) return;
 				_action = CurrentAction.PickUp;
 			} else {
+				// Place down a block. Make sure it's
+				// put on a solid top face of a block.
 				if (!CanPlace(world, selection, carried)) return;
 				_action = CurrentAction.PlaceDown;
 			}

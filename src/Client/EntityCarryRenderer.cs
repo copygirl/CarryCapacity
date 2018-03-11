@@ -63,6 +63,11 @@ namespace CarryCapacity.Client
 		public void OnRenderFrame(float deltaTime, EnumRenderStage stage)
 		{
 			foreach (var player in API.World.AllPlayers) {
+				// Player entity may be null in some circumstances.
+				// Maybe the other player is too far away, so there's
+				// no entity spawned for them on the client's side?
+				if (player.Entity == null) continue;
+				
 				// Don't render anything on the client player if they're in first person.
 				if ((API.World.Player.CameraMode == EnumCameraMode.FirstPerson)
 					&& (player == API.World.Player)) continue;
