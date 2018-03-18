@@ -163,7 +163,6 @@ namespace CarryCapacity
 			
 			// Set the block entity's position to the new position.
 			// Without this, we get some funny behavior.
-			// FIXME: Do we need to set the position, or can we skip it?
 			BlockEntityData.SetInt("posx", pos.X);
 			BlockEntityData.SetInt("posy", pos.Y);
 			BlockEntityData.SetInt("posz", pos.Z);

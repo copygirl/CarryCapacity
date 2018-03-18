@@ -14,7 +14,7 @@ my Minecraft mod [Wearable Backpacks][WBs].
 
 To carry a supported block or container, point your cursor at it and **hold
 right click** while sneaking with an empty hand. To place it back down, point
-your cursor on top of a solid block and, again, hold right click it while
+your cursor on side of a solid block and, again, hold right click it while
 sneaking with an empty hand.
 
 ## Download

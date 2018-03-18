@@ -41,17 +41,19 @@ namespace CarryCapacity.Handler
 			var player    = world.Player;
 			var carried   = player.Entity.GetCarried();
 			var selection = player.CurrentBlockSelection;
-			_selectedBlock = selection?.Position;
-			if (_selectedBlock == null) return;
+			if (selection == null) return;
+			
 			if (carried == null) {
 				// Pick up a block. Ensure it's carryable.
-				if (!world.BlockAccessor.GetBlock(_selectedBlock).IsCarryable()) return;
-				_action = CurrentAction.PickUp;
+				if (!world.BlockAccessor.GetBlock(selection.Position).IsCarryable()) return;
+				_action        = CurrentAction.PickUp;
+				_selectedBlock = selection.Position;
 			} else {
 				// Place down a block. Make sure it's
 				// put on a solid top face of a block.
 				if (!CanPlace(world, selection, carried)) return;
-				_action = CurrentAction.PlaceDown;
+				_action        = CurrentAction.PlaceDown;
+				_selectedBlock = GetPlacedPosition(world, selection, carried.Block);
 			}
 			OnHold(0.0F);
 		}
@@ -59,7 +61,8 @@ namespace CarryCapacity.Handler
 		public void OnHold(float time)
 		{
 			if (_action == CurrentAction.None) return;
-			var player = Mod.ClientAPI.World.Player;
+			var world  = Mod.ClientAPI.World;
+			var player = world.Player;
 			
 			// TODO: Don't run any of this while in a GUI.
 			// TODO: Only allow close blocks to be picked up.
@@ -71,21 +74,23 @@ namespace CarryCapacity.Handler
 			if (!isSneaking || !isEmptyHanded)
 				{ OnRelease(); return; }
 			
-			// Make sure the player is still looking at the same block.
-			var selection = player.CurrentBlockSelection;
-			if (!_selectedBlock.Equals(selection?.Position))
-				{ OnRelease(); return; }
-			
-			var carried = player.Entity.GetCarried();
 			// Ensure the player hasn't in the meantime
 			// picked up / placed down something somehow.
+			var carried = player.Entity.GetCarried();
 			if ((_action == CurrentAction.PickUp) == (carried != null))
 				{ OnRelease(); return; }
+			
+			// Make sure the player is still looking at the same block.
+			var selection = player.CurrentBlockSelection;
+			var position  = (_action == CurrentAction.PlaceDown)
+				? GetPlacedPosition(world, selection, carried.Block)
+				: selection?.Position;
+			if (!_selectedBlock.Equals(position)) { OnRelease(); return; }
 			
 			// Get the block behavior from either the block
 			// to be picked up or the currently carried block.
 			var behavior = ((_action == CurrentAction.PickUp)
-					? player.Entity.World.BlockAccessor.GetBlock(_selectedBlock)
+					? world.BlockAccessor.GetBlock(selection.Position)
 					: carried.Block
 				).GetBehaviorOrDefault(BlockBehaviorCarryable.DEFAULT);
 			
@@ -146,12 +151,12 @@ namespace CarryCapacity.Handler
 		                            CarriedBlock carried)
 		{
 			var clickedBlock = world.BlockAccessor.GetBlock(selection.Position);
-			// If clicked block is replacable, check block below instead.
-			if (clickedBlock.IsReplacableBy(carried.Block)) {
-				clickedBlock = world.BlockAccessor.GetBlock(selection.Position.DownCopy());
-			// Otherwise make sure that the block was clicked on the top side.
-			} else if (selection.Face != BlockFacing.UP) return false;
-			return clickedBlock.SideSolid[BlockFacing.UP.Index];
+			return clickedBlock.IsReplacableBy(carried.Block)
+				// If clicked block is replacable, check block below instead.
+				? world.BlockAccessor.GetBlock(selection.Position.DownCopy())
+					.SideSolid[BlockFacing.UP.Index]
+				// Otherwise, just make sure the clicked side is solid.
+				: clickedBlock.SideSolid[selection.Face.Index];
 		}
 		
 		public static bool PlaceDown(IPlayer player, CarriedBlock carried,
@@ -168,7 +173,7 @@ namespace CarryCapacity.Handler
 				selection.Face = BlockFacing.UP;
 				selection.HitPosition.Y = 1.0;
 			} else {
-				selection.Position.Up();
+				selection.Position.Offset(selection.Face);
 				selection.DidOffset = true;
 			}
 			
@@ -181,6 +186,22 @@ namespace CarryCapacity.Handler
 		{
 			player.Entity.World.BlockAccessor.MarkBlockDirty(pos);
 			player.Entity.WatchedAttributes.MarkPathDirty(CarriedBlock.ATTRIBUTE_ID);
+		}
+		
+		/// <summary> Returns the position that the specified block would
+		///           be placed at for the specified block selection. </summary>
+		private static BlockPos GetPlacedPosition(
+			IWorldAccessor world, BlockSelection selection, Block block)
+		{
+			if (selection == null) return null;
+			var position     = selection.Position.Copy();
+			var clickedBlock = world.BlockAccessor.GetBlock(position);
+			if (!clickedBlock.IsReplacableBy(block)) {
+				if (clickedBlock.SideSolid[selection.Face.Index])
+					position.Offset(selection.Face);
+				else return null;
+			}
+			return position;
 		}
 		
 		private enum CurrentAction
