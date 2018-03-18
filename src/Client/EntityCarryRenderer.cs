@@ -43,7 +43,7 @@ namespace CarryCapacity.Client
 			if (carried == null) return null;
 			if (_cachedBlocks.TryGetValue(carried.Block.Id, out var cached)) return cached;
 			
-			var meshData  = API.Tesselator.GetDefaultBlockMesh(carried.Block);
+			API.Tesselator.TesselateBlock(carried.Block, out var meshData);
 			var mesh      = API.Render.UploadMesh(meshData);
 			var textureID = API.BlockTextureAtlas.Positions[0].atlasTextureId;
 			var transform = carried.Block.GetBehaviorOrDefault(

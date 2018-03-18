@@ -169,7 +169,7 @@ namespace CarryCapacity
 			BlockEntityData.SetInt("posz", pos.Z);
 			
 			var blockEntity = world.BlockAccessor.GetBlockEntity(pos);
-			blockEntity?.FromTreeAtributes(BlockEntityData);
+			blockEntity?.FromTreeAtributes(BlockEntityData, world);
 		}
 	}
 	

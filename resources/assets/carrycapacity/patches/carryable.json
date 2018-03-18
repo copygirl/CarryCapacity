@@ -1,0 +1,21 @@
+[
+	{ file: "game:blocktypes/wood/generic/chest", op: "replace", path: "/behaviors", value: [
+		{ name: "Carryable", properties: {
+			translation: [ 0.0625, 0, 0 ],
+			rotation: [ 0, 180, 0 ],
+		} },
+		{ name: "Container" },
+		{ name: "HorizontalOrientable" },
+	] },
+	{ file: "game:blocktypes/reed/stationarybasket", op: "replace", path: "/behaviors", value: [
+		{ name: "Carryable", properties: {
+			rotation: [ 0, 0, -90 ],
+			scale: 0.65,
+			interactDelay: 0.4,
+		} },
+		{ name: "Container" },
+		{ name: "HorizontalOrientable", properties: {
+			dropBlockFace: "east"
+		} },
+	] },
+]
