@@ -9,8 +9,9 @@
 	] },
 	{ file: "game:blocktypes/reed/stationarybasket", op: "replace", path: "/behaviors", value: [
 		{ name: "Carryable", properties: {
+			translation: [ 0.09375, 0, 0.03125 ],
 			rotation: [ 0, 0, -90 ],
-			scale: 0.65,
+			scale: 0.6,
 			interactDelay: 0.4,
 		} },
 		{ name: "Container" },
