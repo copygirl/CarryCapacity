@@ -46,8 +46,6 @@ namespace CarryCapacity
 			api.Register<BlockBehaviorCarryable>();
 			
 			CarryHandler = new CarryHandler(this);
-			
-			base.Start(api);
 		}
 		
 		public override void StartClientSide(ICoreClientAPI api)
