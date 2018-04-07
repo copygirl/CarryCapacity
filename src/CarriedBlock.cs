@@ -103,6 +103,7 @@ namespace CarryCapacity
 				if (blockEntity != null) {
 					blockEntityData = new TreeAttribute();
 					blockEntity.ToTreeAttributes(blockEntityData);
+					blockEntityData = blockEntityData.Clone();
 					// We don't need to keep the position.
 					blockEntityData.RemoveAttribute("posx");
 					blockEntityData.RemoveAttribute("posy");
