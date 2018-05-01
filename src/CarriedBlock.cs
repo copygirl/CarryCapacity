@@ -18,7 +18,7 @@ namespace CarryCapacity
 	public class CarriedBlock
 	{
 		public static string ATTRIBUTE_ID { get; } =
-			$"{ CarryCapacityMod.MOD_ID }:CarriedBlock";
+			$"{ CarrySystem.MOD_ID }:CarriedBlock";
 		
 		
 		public Block Block { get; }

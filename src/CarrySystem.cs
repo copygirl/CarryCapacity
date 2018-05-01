@@ -1,4 +1,4 @@
-using CarryCapacity.Client;
+﻿using CarryCapacity.Client;
 using CarryCapacity.Handler;
 using CarryCapacity.Network;
 using Vintagestory.API.Client;
@@ -6,24 +6,20 @@ using Vintagestory.API.Common;
 using Vintagestory.API.MathTools;
 using Vintagestory.API.Server;
 
+[assembly: ModInfo( "CarryCapacity",
+	Description = "Adds the capability to carry various things",
+	Website     = "https://github.com/copygirl/CarryCapacity",
+	Authors     = new []{ "copygirl" })]
+
 namespace CarryCapacity
 {
-	/// <summary> Main class for the "Carry Capacity" mod, which allows certain
+	/// <summary> Main system for the "CarryCapacity" mod, which allows certain
 	///           blocks such as chests to be picked up and carried around. </summary>
-	public class CarryCapacityMod : ModBase
+	public class CarrySystem : ModSystem
 	{
-		public static ModInfo MOD_INFO { get; } = new ModInfo {
-			Name        = "CarryCapacity",
-			Description = "Adds the capability to carry various things",
-			Website     = "https://github.com/copygirl/CarryCapacity",
-			Author      = "copygirl",
-		};
+		public static string MOD_ID = "carrycapacity";
 		
-		public static string MOD_ID => MOD_INFO.Name.ToLowerInvariant();
-		
-		public override ModInfo GetModInfo() => MOD_INFO;
 		public override bool AllowRuntimeReload() => true;
-		
 		
 		// Client
 		public ICoreClientAPI ClientAPI { get; private set; }

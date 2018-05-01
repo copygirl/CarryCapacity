@@ -95,8 +95,8 @@ namespace CarryCapacity
 			
 			// TODO: Render at mouse cursor, not center of screen.
 			//       Gotta wait for the API to add MouseMove event.
-			var x = API.Render.ScreenWidth / 2;
-			var y = API.Render.ScreenHeight / 2;
+			var x = API.Render.FrameWidth / 2;
+			var y = API.Render.FrameHeight / 2;
 			
 			rend.GlPushMatrix();
 				rend.GlTranslate(x, y, 0);

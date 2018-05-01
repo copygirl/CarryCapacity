@@ -15,9 +15,9 @@ namespace CarryCapacity.Handler
 		private CurrentAction _action   = CurrentAction.None;
 		private BlockPos _selectedBlock = null;
 		
-		private CarryCapacityMod Mod { get; }
+		private CarrySystem Mod { get; }
 		
-		public CarryHandler(CarryCapacityMod mod)
+		public CarryHandler(CarrySystem mod)
 			=> Mod = mod;
 		
 		public void InitClient()
