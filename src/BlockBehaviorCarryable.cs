@@ -41,12 +41,12 @@ namespace CarryCapacity
 				return success;
 			}
 			
-			if (TryGetVec3f("translation" , out var t)) Transform.Translation = t;
-			if (TryGetVec3f("rotation"    , out var r)) Transform.Rotation = r;
-			if (TryGetVec3f("origin"      , out var o)) Transform.Origin = o;
-			if (TryGetFloat("scale"       , out var s)) Transform.Scale = s;
+			if (TryGetVec3f("translation"   , out var t)) Transform.Translation = t;
+			if (TryGetVec3f("rotation"      , out var r)) Transform.Rotation = r;
+			if (TryGetVec3f("origin"        , out var o)) Transform.Origin = o;
+			if (TryGetFloat("scale"         , out var s)) Transform.Scale = s;
 			
-			if (TryGetFloat("interactDelay", out var d)) InteractDelay = d;
+			if (TryGetFloat("interactDelay" , out var d)) InteractDelay = d;
 		}
 		
 		public override bool OnPlayerBlockInteract(
