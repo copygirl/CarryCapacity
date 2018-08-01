@@ -112,7 +112,7 @@ namespace CarryCapacity.Client
 				
 				// Apply carried block's behavior transform.
 				var t = cached.Transform;
-				Mat4f.Scale(_tmpMat, _tmpMat, t.Scale, t.Scale, t.Scale);
+				Mat4f.Scale(_tmpMat, _tmpMat, t.ScaleXYZ.X, t.ScaleXYZ.Y, t.ScaleXYZ.Z);
 				Mat4f.Translate(_tmpMat, _tmpMat, _impliedOffset.X, _impliedOffset.Y, _impliedOffset.Z);
 				Mat4f.Translate(_tmpMat, _tmpMat, t.Origin.X, t.Origin.Y, t.Origin.Z);
 				Mat4f.RotateX(_tmpMat, _tmpMat, t.Rotation.X * GameMath.DEG2RAD);

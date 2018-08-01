@@ -19,7 +19,7 @@ namespace CarryCapacity
 				Translation = new Vec3f(0.0F, 0.0F, 0.0F),
 				Rotation    = new Vec3f(0.0F, 0.0F, 0.0F),
 				Origin      = new Vec3f(0.5F, 0.5F, 0.5F),
-				Scale       = 0.5F
+				ScaleXYZ    = new Vec3f(0.5F, 0.5F, 0.5F)
 			};
 		
 		public float InteractDelay { get; private set; } = 0.8F;
@@ -41,10 +41,13 @@ namespace CarryCapacity
 				return success;
 			}
 			
-			if (TryGetVec3f("translation"   , out var t)) Transform.Translation = t;
-			if (TryGetVec3f("rotation"      , out var r)) Transform.Rotation = r;
-			if (TryGetVec3f("origin"        , out var o)) Transform.Origin = o;
-			if (TryGetFloat("scale"         , out var s)) Transform.Scale = s;
+			if (TryGetVec3f("translation" , out var t)) Transform.Translation = t;
+			if (TryGetVec3f("rotation"    , out var r)) Transform.Rotation = r;
+			if (TryGetVec3f("origin"      , out var o)) Transform.Origin = o;
+			
+			// Try to get scale both as a Vec3f and single float - for compatibility reasons.
+			if (TryGetVec3f("scale", out var sv)) Transform.ScaleXYZ = sv;
+			if (TryGetFloat("scale", out var sf)) Transform.ScaleXYZ = new Vec3f(sf, sf, sf);
 			
 			if (TryGetFloat("interactDelay" , out var d)) InteractDelay = d;
 		}

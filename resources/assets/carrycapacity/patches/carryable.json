@@ -6,7 +6,7 @@
 			rotation: [ 0, 180, 0 ],
 		}
 	} },
-	{ file: "game:blocktypes/reed/stationarybasket", op: "add", path: "/behaviors/0", value: {
+	{ file: "game:blocktypes/stationarybasket", op: "add", path: "/behaviors/0", value: {
 		name: "Carryable",
 		properties: {
 			translation: [ 0.09375, 0, 0.03125 ],

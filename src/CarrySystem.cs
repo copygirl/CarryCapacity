@@ -9,8 +9,7 @@ using Vintagestory.API.Server;
 [assembly: ModInfo( "CarryCapacity",
 	Description = "Adds the capability to carry various things",
 	Website     = "https://github.com/copygirl/CarryCapacity",
-	Authors     = new []{ "copygirl" },
-	RequiredOnClient = false )]
+	Authors     = new []{ "copygirl" } )]
 
 namespace CarryCapacity
 {
