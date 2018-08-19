@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Vintagestory.API;
 using Vintagestory.API.Client;
@@ -63,10 +64,15 @@ namespace CarryCapacity.Client
 		public void OnRenderFrame(float deltaTime, EnumRenderStage stage)
 		{
 			foreach (var player in API.World.AllPlayers) {
+				if (player == null) throw new Exception("null player in API.World.AllPlayers!");
+				
 				// Player entity may be null in some circumstances.
 				// Maybe the other player is too far away, so there's
 				// no entity spawned for them on the client's side?
 				if (player.Entity == null) continue;
+				
+				if (API.World == null) throw new Exception("API.World is null!");
+				if (API.World.Player == null) throw new Exception("API.World.Player is null!");
 				
 				// Don't render anything on the client player if they're in first person.
 				if ((API.World.Player.CameraMode == EnumCameraMode.FirstPerson)
@@ -80,8 +86,11 @@ namespace CarryCapacity.Client
 				var renderer     = (EntityShapeRenderer)entity.Renderer;
 				var isShadowPass = (stage != EnumRenderStage.Opaque);
 				
+				if (renderer == null) throw new Exception("entity.Renderer is null!");
+				
 				var renderApi = API.Render;
 				var animator  = (BlendEntityAnimator)renderer.curAnimator;
+				if (animator == null) throw new Exception("renderer.curAnimator is null!");
 				if (!animator.AttachmentPointByCode.TryGetValue("Back", out var pose)) return;
 				
 				Mat4f.Copy(_tmpMat, renderer.ModelMat);
