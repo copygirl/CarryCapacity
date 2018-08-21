@@ -64,6 +64,7 @@ namespace CarryCapacity.Client
 		public void OnRenderFrame(float deltaTime, EnumRenderStage stage)
 		{
 			foreach (var player in API.World.AllPlayers) {
+				// Leaving the additional, more detailed exceptions in just in case other things end up breaking.
 				if (player == null) throw new Exception("null player in API.World.AllPlayers!");
 				
 				// Player entity may be null in some circumstances.
@@ -83,15 +84,16 @@ namespace CarryCapacity.Client
 				var cached  = GetCachedBlock(carried);
 				if (cached == null) continue;
 				
-				var renderer     = (EntityShapeRenderer)entity.Renderer;
-				var isShadowPass = (stage != EnumRenderStage.Opaque);
+				var renderer = (EntityShapeRenderer)entity.Renderer;
+				if (renderer == null) continue; // Apparently this can end up being null?
+				// Reported to Tyron, so it might be fixed. Leaving it in for now just in case.
 				
-				if (renderer == null) throw new Exception("entity.Renderer is null!");
-				
-				var renderApi = API.Render;
-				var animator  = (BlendEntityAnimator)renderer.curAnimator;
+				var animator = (BlendEntityAnimator)renderer.curAnimator;
 				if (animator == null) throw new Exception("renderer.curAnimator is null!");
 				if (!animator.AttachmentPointByCode.TryGetValue("Back", out var pose)) return;
+				
+				var renderApi    = API.Render;
+				var isShadowPass = (stage != EnumRenderStage.Opaque);
 				
 				Mat4f.Copy(_tmpMat, renderer.ModelMat);
 				
