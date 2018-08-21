@@ -26,6 +26,14 @@ namespace CarryCapacity.Client
 			api.Event.RegisterRenderer(this, EnumRenderStage.Opaque);
 			api.Event.RegisterRenderer(this, EnumRenderStage.ShadowFar);
 			api.Event.RegisterRenderer(this, EnumRenderStage.ShadowNear);
+			api.Event.LeaveWorld += UnloadMeshes;
+		}
+		
+		private void UnloadMeshes()
+		{
+			foreach (var cache in _cachedBlocks.Values)
+				cache.Mesh.Dispose();
+			_cachedBlocks.Clear();
 		}
 		
 		
