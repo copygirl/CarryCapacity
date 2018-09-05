@@ -205,7 +205,8 @@ namespace CarryCapacity
 			const float SOUND_RANGE  = 16.0F;
 			const float SOUND_VOLUME = 0.8F;
 			
-			if (Block.Sounds.Place == null) return;
+			// TODO: In 1.7.0, Block.Sounds should not be null anymore.
+			if (Block.Sounds?.Place == null) return;
 			
 			var player = (entity.World.Side == EnumAppSide.Server)
 					&& (entity is IEntityPlayer entityPlayer)
