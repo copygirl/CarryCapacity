@@ -17,18 +17,25 @@ namespace CarryCapacity
 	/// </summary>
 	public class CarriedBlock
 	{
-		public static string ATTRIBUTE_ID { get; } =
+		public static string ATTRIBUTE_ID_STACK { get; } =
+			$"{ CarrySystem.MOD_ID }:CarriedBlock/Stack";
+		public static string ATTRIBUTE_ID_DATA { get; } =
+			$"{ CarrySystem.MOD_ID }:CarriedBlock/Data";
+		
+		/// <summary> Before version 0.3.2, attribute held only a block ID. </summary>
+		public static string ATTRIBUTE_ID_OLD { get; } =
 			$"{ CarrySystem.MOD_ID }:CarriedBlock";
 		
 		
-		public Block Block { get; }
+		public ItemStack ItemStack { get; }
+		public Block Block => ItemStack.Block;
 		
 		public ITreeAttribute BlockEntityData { get; }
 		
-		public CarriedBlock(Block block, ITreeAttribute blockEntityData)
+		public CarriedBlock(ItemStack stack, ITreeAttribute blockEntityData)
 		{
-			if (block == null) throw new ArgumentNullException(nameof(block));
-			Block = block;
+			if (stack == null) throw new ArgumentNullException(nameof(stack));
+			ItemStack = stack;
 			BlockEntityData = blockEntityData;
 		}
 		
@@ -40,17 +47,27 @@ namespace CarryCapacity
 		{
 			if (entity == null) throw new ArgumentNullException(nameof(entity));
 			
-			var blockCode = entity.WatchedAttributes.GetString(ATTRIBUTE_ID);
-			if (blockCode == null) return null;
-			var block = entity.World.GetBlock(new AssetLocation(blockCode));
-			if (block == null) return null;
+			var stack = entity.WatchedAttributes.GetItemstack(ATTRIBUTE_ID_STACK);
+			ITreeAttribute blockEntityData;
+			if (stack != null) {
+				// The ItemStack returned by TreeAttribute.GetItemstack
+				// does not have Block set, so we have to resolve it.
+				stack.ResolveBlockOrItem(entity.World);
+				blockEntityData = (entity.World.Side == EnumAppSide.Server)
+					? entity.Attributes.GetTreeAttribute(ATTRIBUTE_ID_DATA) : null;
+			} else {
+				// Code to handle versions before 0.3.2.
+				var blockCode = entity.WatchedAttributes.GetString(ATTRIBUTE_ID_OLD);
+				if (blockCode == null) return null;
+				var block = entity.World.GetBlock(new AssetLocation(blockCode));
+				if (block == null) return null;
+				
+				stack = new ItemStack(block);
+				blockEntityData = (entity.World.Side == EnumAppSide.Server)
+					? entity.Attributes.GetTreeAttribute(ATTRIBUTE_ID_OLD) : null;
+			}
 			
-			ITreeAttribute blockEntityData =
-				(entity.World.Side == EnumAppSide.Server)
-					? entity.Attributes.GetTreeAttribute(ATTRIBUTE_ID)
-					: null;
-			
-			return new CarriedBlock(block, blockEntityData);
+			return new CarriedBlock(stack, blockEntityData);
 		}
 		
 		/// <summary> Stores this <see cref="CarriedBlock"/>
@@ -60,12 +77,11 @@ namespace CarryCapacity
 		{
 			if (entity == null) throw new ArgumentNullException(nameof(entity));
 			
-			entity.WatchedAttributes.SetString(
-				ATTRIBUTE_ID, Block.Code.ToString());
+			entity.WatchedAttributes.SetItemstack(ATTRIBUTE_ID_STACK, ItemStack);
 			
 			if ((entity.World.Side == EnumAppSide.Server)
 				&& (BlockEntityData != null))
-				entity.Attributes[ATTRIBUTE_ID] = BlockEntityData;
+				entity.Attributes[ATTRIBUTE_ID_DATA] = BlockEntityData;
 		}
 		
 		/// <summary> Removes any <see cref="CarriedBlock"/>
@@ -74,8 +90,13 @@ namespace CarryCapacity
 		public static void Remove(IEntity entity)
 		{
 			if (entity == null) throw new ArgumentNullException(nameof(entity));
-			entity.WatchedAttributes.RemoveAttribute(ATTRIBUTE_ID);
-			entity.Attributes.RemoveAttribute(ATTRIBUTE_ID);
+			
+			entity.WatchedAttributes.RemoveAttribute(ATTRIBUTE_ID_STACK);
+			entity.Attributes.RemoveAttribute(ATTRIBUTE_ID_DATA);
+			
+			// Code to handle versions before 0.3.2.
+			entity.WatchedAttributes.RemoveAttribute(ATTRIBUTE_ID_OLD);
+			entity.Attributes.RemoveAttribute(ATTRIBUTE_ID_OLD);
 		}
 		
 		
@@ -91,11 +112,7 @@ namespace CarryCapacity
 			
 			var block = world.BlockAccessor.GetBlock(pos);
 			if (block.Id == 0) return null; // Can't pick up air.
-			
-			// Try using pick block feature to get a default /
-			// generic version of it without rotation and such.
-			var pickBlock = block.OnPickBlock(world, pos)?.Block;
-			if (pickBlock?.Id > 0) block = pickBlock;
+			var stack = block.OnPickBlock(world, pos) ?? new ItemStack(block);
 			
 			ITreeAttribute blockEntityData = null;
 			if (world.Side == EnumAppSide.Server) {
@@ -111,7 +128,7 @@ namespace CarryCapacity
 				}
 			}
 			
-			return new CarriedBlock(block, blockEntityData);
+			return new CarriedBlock(stack, blockEntityData);
 		}
 		
 		/// <summary>
@@ -133,18 +150,28 @@ namespace CarryCapacity
 		}
 		
 		/// <summary>
-		///   Attempts to place down a <see cref="CarriedBlock"/> at the
-		///   specified world and position, returning whether it was successful.
+		///   Attempts to place down a <see cref="CarriedBlock"/> at the specified world,
+		///   selection and by the entity (if any), returning whether it was successful.
 		/// </summary>
 		/// <example cref="ArgumentNullException"> Thrown if world or pos is null. </exception>
-		public bool PlaceDown(IWorldAccessor world, BlockPos pos)
+		public bool PlaceDown(IWorldAccessor world, BlockSelection selection, IEntity entity = null)
 		{
 			if (world == null) throw new ArgumentNullException(nameof(world));
-			if (pos == null) throw new ArgumentNullException(nameof(pos));
+			if (selection == null) throw new ArgumentNullException(nameof(selection));
+			if (!world.BlockAccessor.IsValidPos(selection.Position)) return false;
 			
-			if (!world.BlockAccessor.IsValidPos(pos)) return false;
-			world.BlockAccessor.SetBlock((ushort)Block.Id, pos);
-			RestoreBlockEntityData(world, pos);
+			if (entity is IEntityPlayer playerEntity) {
+				var player = world.PlayerByUid(playerEntity.PlayerUID);
+				if (!Block.TryPlaceBlock(world, player, ItemStack, selection)) return false;
+			} else {
+				world.BlockAccessor.SetBlock((ushort)Block.Id, selection.Position);
+				// TODO: Handle type attribute.
+			}
+			
+			RestoreBlockEntityData(world, selection.Position);
+			PlaySound(selection.Position, entity);
+			if (entity != null) Remove(entity);
+			
 			return true;
 		}
 		
@@ -170,6 +197,24 @@ namespace CarryCapacity
 			
 			var blockEntity = world.BlockAccessor.GetBlockEntity(pos);
 			blockEntity?.FromTreeAtributes(BlockEntityData, world);
+		}
+		
+		
+		internal void PlaySound(BlockPos pos, IEntity entity = null)
+		{
+			const float SOUND_RANGE  = 16.0F;
+			const float SOUND_VOLUME = 0.8F;
+			
+			if (Block.Sounds.Place == null) return;
+			
+			var player = (entity.World.Side == EnumAppSide.Server)
+					&& (entity is IEntityPlayer entityPlayer)
+				? entity.World.PlayerByUid(entityPlayer.PlayerUID)
+				: null;
+			
+			entity.World.PlaySoundAt(Block.Sounds.Place,
+				pos.X + 0.5, pos.Y + 0.25, pos.Z + 0.5, player,
+				range: SOUND_RANGE, volume: SOUND_VOLUME);
 		}
 	}
 	
@@ -203,7 +248,7 @@ namespace CarryCapacity
 			if (carried == null) return false;
 			
 			carried.Set(entity);
-			PlaySound(entity, carried, pos);
+			carried.PlaySound(pos, entity);
 			return true;
 		}
 		
@@ -218,20 +263,10 @@ namespace CarryCapacity
 			if (player == null) throw new ArgumentNullException(nameof(player));
 			if (selection == null) throw new ArgumentNullException(nameof(selection));
 			
-			var world   = player.Entity.World;
 			var carried = CarriedBlock.Get(player.Entity);
 			if (carried == null) return false;
 			
-			// Now try placing the block. Just going to utilize the default
-			// block placement using an ItemStack. Let's hope nothing breaks!
-			var stack = new ItemStack(carried.Block);
-			var pos   = selection.Position;
-			if (!carried.Block.TryPlaceBlock(world, player, stack, selection)) return false;
-			carried.RestoreBlockEntityData(world, pos);
-			
-			CarriedBlock.Remove(player.Entity);
-			PlaySound(player.Entity, carried, pos);
-			return true;
+			return carried.PlaceDown(player.Entity.World, selection, player.Entity);
 		}
 		
 		/// <summary>
@@ -242,34 +277,17 @@ namespace CarryCapacity
 		public static bool DropCarried(this IEntity entity, BlockPos pos)
 		{
 			if (pos == null) throw new ArgumentNullException(nameof(pos));
+			
 			var carried = CarriedBlock.Get(entity);
 			if (carried == null) return false;
 			
-			if (!entity.World.BlockAccessor.IsValidPos(pos)) return false;
-			entity.World.BlockAccessor.SetBlock((ushort)carried.Block.Id, pos);
-			carried.RestoreBlockEntityData(entity.World, pos);
+			var selection = new BlockSelection {
+				Position    = pos,
+				Face        = BlockFacing.UP,
+				HitPosition = new Vec3d(0.5, 0.5, 0.5),
+			};
 			
-			CarriedBlock.Remove(entity);
-			PlaySound(entity, carried, pos);
-			return true;
-		}
-		
-		
-		private static void PlaySound(IEntity entity, CarriedBlock carried, BlockPos pos)
-		{
-			const float SOUND_RANGE  = 16.0F;
-			const float SOUND_VOLUME = 0.8F;
-			
-			if (carried.Block.Sounds.Place == null) return;
-			
-			var player = (entity.World.Side == EnumAppSide.Server)
-					&& (entity is IEntityPlayer entityPlayer)
-				? entity.World.PlayerByUid(entityPlayer.PlayerUID)
-				: null;
-			
-			entity.World.PlaySoundAt(carried.Block.Sounds.Place,
-				pos.X + 0.5, pos.Y + 0.25, pos.Z + 0.5, player,
-				range: SOUND_RANGE, volume: SOUND_VOLUME);
+			return carried.PlaceDown(entity.World, selection, entity);
 		}
 	}
 }

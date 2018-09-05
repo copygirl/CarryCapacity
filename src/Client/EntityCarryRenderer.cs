@@ -15,9 +15,6 @@ namespace CarryCapacity.Client
 			= new Vec3f(0.0F, -0.6F, -0.5F);
 		
 		
-		private readonly Dictionary<int, CachedCarryableBlock> _cachedBlocks
-			= new Dictionary<int, CachedCarryableBlock>();
-		
 		private ICoreClientAPI API { get; }
 		
 		public EntityCarryRenderer(ICoreClientAPI api)
@@ -26,15 +23,9 @@ namespace CarryCapacity.Client
 			api.Event.RegisterRenderer(this, EnumRenderStage.Opaque);
 			api.Event.RegisterRenderer(this, EnumRenderStage.ShadowFar);
 			api.Event.RegisterRenderer(this, EnumRenderStage.ShadowNear);
-			api.Event.LeaveWorld += UnloadMeshes;
 		}
 		
-		private void UnloadMeshes()
-		{
-			foreach (var cache in _cachedBlocks.Values)
-				cache.Mesh.Dispose();
-			_cachedBlocks.Clear();
-		}
+		public void Dispose() {  }
 		
 		
 		private class CachedCarryableBlock
@@ -47,20 +38,14 @@ namespace CarryCapacity.Client
 				{ Mesh = mesh; TextureID = textureID; Transform = transform; }
 		}
 		
-		private CachedCarryableBlock GetCachedBlock(CarriedBlock carried)
+		private ItemRenderInfo GetRenderInfo(CarriedBlock carried)
 		{
-			if (carried == null) return null;
-			if (_cachedBlocks.TryGetValue(carried.Block.Id, out var cached)) return cached;
-			
-			API.Tesselator.TesselateBlock(carried.Block, out var meshData);
-			var mesh      = API.Render.UploadMesh(meshData);
-			var textureID = API.BlockTextureAtlas.Positions[0].atlasTextureId;
-			var transform = carried.Block.GetBehaviorOrDefault(
+			// Alternative: Cache API.TesselatorManager.GetDefaultBlockMesh manually.
+			var renderInfo = API.Render.GetItemStackRenderInfo(
+				carried.ItemStack, EnumItemRenderTarget.Ground);
+			renderInfo.Transform = carried.Block.GetBehaviorOrDefault(
 				BlockBehaviorCarryable.DEFAULT).Transform;
-			
-			cached = new CachedCarryableBlock(mesh, textureID, transform);
-			_cachedBlocks.Add(carried.Block.Id, cached);
-			return cached;
+			return renderInfo;
 		}
 		
 		
@@ -89,9 +74,9 @@ namespace CarryCapacity.Client
 				
 				var entity  = player.Entity;
 				var carried = entity.GetCarried();
-				var cached  = GetCachedBlock(carried);
-				if (cached == null) continue;
+				if (carried == null) continue;
 				
+				var renderInfo = GetRenderInfo(carried);
 				var renderer = (EntityShapeRenderer)entity.Renderer;
 				if (renderer == null) continue; // Apparently this can end up being null?
 				// Reported to Tyron, so it might be fixed. Leaving it in for now just in case.
@@ -119,9 +104,9 @@ namespace CarryCapacity.Client
 				
 				if (!isShadowPass) {
 					prog = renderApi.PreparedStandardShader((int)entity.Pos.X, (int)entity.Pos.Y, (int)entity.Pos.Z);
-					prog.Tex2D = cached.TextureID;
+					prog.Tex2D = renderInfo.TextureId;
 					prog.AlphaTest = 0.01f;
-				} else renderApi.CurrentActiveShader.BindTexture2D("tex2d", cached.TextureID, 0);
+				} else renderApi.CurrentActiveShader.BindTexture2D("tex2d", renderInfo.TextureId, 0);
 				
 				// Apply attachment point transform.
 				Mat4f.Translate(_tmpMat, _tmpMat, (float)(attach.PosX / 16), (float)(attach.PosY / 16), (float)(attach.PosZ / 16));
@@ -130,7 +115,7 @@ namespace CarryCapacity.Client
 				Mat4f.RotateZ(_tmpMat, _tmpMat, (float)attach.RotationZ * GameMath.DEG2RAD);
 				
 				// Apply carried block's behavior transform.
-				var t = cached.Transform;
+				var t = renderInfo.Transform;
 				Mat4f.Scale(_tmpMat, _tmpMat, t.ScaleXYZ.X, t.ScaleXYZ.Y, t.ScaleXYZ.Z);
 				Mat4f.Translate(_tmpMat, _tmpMat, _impliedOffset.X, _impliedOffset.Y, _impliedOffset.Z);
 				Mat4f.Translate(_tmpMat, _tmpMat, t.Origin.X, t.Origin.Y, t.Origin.Z);
@@ -148,17 +133,10 @@ namespace CarryCapacity.Client
 					API.Render.CurrentActiveShader.Uniform("origin", renderer.OriginPos);
 				}
 				
-				API.Render.RenderMesh(cached.Mesh);
+				API.Render.RenderMesh(renderInfo.ModelRef);
 				
 				prog?.Stop();
 			}
-		}
-		
-		public void Dispose()
-		{
-			foreach (var cached in _cachedBlocks.Values)
-				API.Render.DeleteMesh(cached.Mesh);
-			_cachedBlocks.Clear();
 		}
 	}
 }

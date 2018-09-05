@@ -35,7 +35,10 @@ namespace CarryCapacity.Handler
 			}
 			
 			var placedPos = groundEmpty ?? firstEmpty;
-			if (placedPos != null) player.Entity.DropCarried(placedPos);
+			if (placedPos == null) return;
+			
+			// FIXME: Drop container contents if block could not be placed.
+			player.Entity.DropCarried(placedPos);
 		}
 	}
 }

@@ -185,7 +185,7 @@ namespace CarryCapacity.Handler
 		private static void InvalidCarry(IPlayer player, BlockPos pos)
 		{
 			player.Entity.World.BlockAccessor.MarkBlockDirty(pos);
-			player.Entity.WatchedAttributes.MarkPathDirty(CarriedBlock.ATTRIBUTE_ID);
+			player.Entity.WatchedAttributes.MarkPathDirty(CarriedBlock.ATTRIBUTE_ID_STACK);
 		}
 		
 		/// <summary> Returns the position that the specified block would
