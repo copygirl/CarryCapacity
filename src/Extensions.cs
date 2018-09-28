@@ -8,13 +8,9 @@ namespace CarryCapacity
 			where T : BlockBehavior
 				=> block.HasBehavior(typeof(T));
 		
-		public static T GetBehavior<T>(this Block block)
-			where T : BlockBehavior
-				=> (T)block.GetBehavior(typeof(T));
-		
 		public static T GetBehaviorOrDefault<T>(this Block block, T @default)
 			where T : BlockBehavior
-				=> block.GetBehavior<T>() ?? @default;
+				=> (T)block.GetBehavior<T>() ?? @default;
 		
 		public static void Register<T>(this ICoreAPI api)
 			where T : BlockBehavior

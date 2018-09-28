@@ -1,6 +1,4 @@
 using System;
-using System.Collections.Generic;
-using Vintagestory.API;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Vintagestory.API.MathTools;
@@ -8,9 +6,8 @@ using Vintagestory.GameContent;
 
 namespace CarryCapacity.Client
 {
-	public class EntityCarryRenderer : IRenderer
+  public class EntityCarryRenderer : IRenderer
 	{
-		private static readonly float[] _tmpMat = Mat4f.Create();
 		private static readonly Vec3f _impliedOffset
 			= new Vec3f(0.0F, -0.6F, -0.5F);
 		
@@ -77,7 +74,7 @@ namespace CarryCapacity.Client
 				if (carried == null) continue;
 				
 				var renderInfo = GetRenderInfo(carried);
-				var renderer = (EntityShapeRenderer)entity.Renderer;
+				var renderer = (EntityShapeRenderer)entity.Properties.Client.Renderer;
 				if (renderer == null) continue; // Apparently this can end up being null?
 				// Reported to Tyron, so it might be fixed. Leaving it in for now just in case.
 				
@@ -88,49 +85,47 @@ namespace CarryCapacity.Client
 				var renderApi    = API.Render;
 				var isShadowPass = (stage != EnumRenderStage.Opaque);
 				
-				Mat4f.Copy(_tmpMat, renderer.ModelMat);
+				var modelMat = Mat4f.CloneIt(renderer.ModelMat);
+				var viewMat  = Array.ConvertAll(API.Render.CameraMatrixOrigin, i => (float)i);
 				
-				var attach = pose.AttachPoint;
-				
-				var mat  = pose.Pose.AnimModelMatrix;
-				var orig = Mat4f.Create();
-				for (int i = 0; i < 16; i++)
-					orig[i] = (float)API.Render.CameraMatrixOrigin[i];
-				
-				if (!isShadowPass) Mat4f.Mul(_tmpMat, orig, _tmpMat);
-				Mat4f.Mul(_tmpMat, _tmpMat, mat);
+				var animModelMat = pose.Pose.AnimModelMatrix;
+				Mat4f.Mul(modelMat, modelMat, animModelMat);
 				
 				IStandardShaderProgram prog = null;
 				
-				if (!isShadowPass) {
+				if (isShadowPass) {
+					renderApi.CurrentActiveShader.BindTexture2D("tex2d", renderInfo.TextureId, 0);
+				} else {
 					prog = renderApi.PreparedStandardShader((int)entity.Pos.X, (int)entity.Pos.Y, (int)entity.Pos.Z);
 					prog.Tex2D = renderInfo.TextureId;
 					prog.AlphaTest = 0.01f;
-				} else renderApi.CurrentActiveShader.BindTexture2D("tex2d", renderInfo.TextureId, 0);
+				}
 				
 				// Apply attachment point transform.
-				Mat4f.Translate(_tmpMat, _tmpMat, (float)(attach.PosX / 16), (float)(attach.PosY / 16), (float)(attach.PosZ / 16));
-				Mat4f.RotateX(_tmpMat, _tmpMat, (float)attach.RotationX * GameMath.DEG2RAD);
-				Mat4f.RotateY(_tmpMat, _tmpMat, (float)attach.RotationY * GameMath.DEG2RAD);
-				Mat4f.RotateZ(_tmpMat, _tmpMat, (float)attach.RotationZ * GameMath.DEG2RAD);
+				var attach = pose.AttachPoint;
+				Mat4f.Translate(modelMat, modelMat, (float)(attach.PosX / 16), (float)(attach.PosY / 16), (float)(attach.PosZ / 16));
+				Mat4f.RotateX(modelMat, modelMat, (float)attach.RotationX * GameMath.DEG2RAD);
+				Mat4f.RotateY(modelMat, modelMat, (float)attach.RotationY * GameMath.DEG2RAD);
+				Mat4f.RotateZ(modelMat, modelMat, (float)attach.RotationZ * GameMath.DEG2RAD);
 				
 				// Apply carried block's behavior transform.
 				var t = renderInfo.Transform;
-				Mat4f.Scale(_tmpMat, _tmpMat, t.ScaleXYZ.X, t.ScaleXYZ.Y, t.ScaleXYZ.Z);
-				Mat4f.Translate(_tmpMat, _tmpMat, _impliedOffset.X, _impliedOffset.Y, _impliedOffset.Z);
-				Mat4f.Translate(_tmpMat, _tmpMat, t.Origin.X, t.Origin.Y, t.Origin.Z);
-				Mat4f.RotateX(_tmpMat, _tmpMat, t.Rotation.X * GameMath.DEG2RAD);
-				Mat4f.RotateY(_tmpMat, _tmpMat, t.Rotation.Y * GameMath.DEG2RAD);
-				Mat4f.RotateZ(_tmpMat, _tmpMat, t.Rotation.Z * GameMath.DEG2RAD);
-				Mat4f.Translate(_tmpMat, _tmpMat, -t.Origin.X, -t.Origin.Y, -t.Origin.Z);
-				Mat4f.Translate(_tmpMat, _tmpMat, t.Translation.X, t.Translation.Y, t.Translation.Z);
+				Mat4f.Scale(modelMat, modelMat, t.ScaleXYZ.X, t.ScaleXYZ.Y, t.ScaleXYZ.Z);
+				Mat4f.Translate(modelMat, modelMat, _impliedOffset.X, _impliedOffset.Y, _impliedOffset.Z);
+				Mat4f.Translate(modelMat, modelMat, t.Origin.X, t.Origin.Y, t.Origin.Z);
+				Mat4f.RotateX(modelMat, modelMat, t.Rotation.X * GameMath.DEG2RAD);
+				Mat4f.RotateY(modelMat, modelMat, t.Rotation.Y * GameMath.DEG2RAD);
+				Mat4f.RotateZ(modelMat, modelMat, t.Rotation.Z * GameMath.DEG2RAD);
+				Mat4f.Translate(modelMat, modelMat, -t.Origin.X, -t.Origin.Y, -t.Origin.Z);
+				Mat4f.Translate(modelMat, modelMat, t.Translation.X, t.Translation.Y, t.Translation.Z);
 				
-				if (!isShadowPass)
-					prog.ModelViewMatrix = _tmpMat;
-				else {
-					Mat4f.Mul(_tmpMat, API.Render.CurrentShadowProjectionMatrix, _tmpMat);
-					API.Render.CurrentActiveShader.UniformMatrix("mvpMatrix", _tmpMat);
+				if (isShadowPass) {
+					Mat4f.Mul(modelMat, API.Render.CurrentShadowProjectionMatrix, modelMat);
+					API.Render.CurrentActiveShader.UniformMatrix("mvpMatrix", modelMat);
 					API.Render.CurrentActiveShader.Uniform("origin", renderer.OriginPos);
+				} else {
+					prog.ModelMatrix = modelMat;
+					prog.ViewMatrix  = viewMat;
 				}
 				
 				API.Render.RenderMesh(renderInfo.ModelRef);
