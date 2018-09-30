@@ -2,13 +2,13 @@
 	"type": "code",
 	"name": "CarryCapacity",
 	"modid": "carrycapacity",
-	"version": "0.3.3",
+	"version": "0.3.4",
 	
 	"description" : "Adds the capability to carry various things",
 	"website": "https://github.com/copygirl/CarryCapacity",
 	"authors": [ "copygirl" ],
 	
 	"dependencies": {
-		"game": "1.7.0"
+		"game": "1.7.1"
 	}
 }
