@@ -11,34 +11,33 @@ namespace CarryCapacity.Handler
 		
 		private void OnPlayerDeath(IPlayer player, DamageSource source)
 		{
-			var carried = player.Entity.GetCarried();
-			if (carried == null) return;
-			
-			var testPos = player.Entity.Pos.AsBlockPos;
-			BlockPos firstEmpty  = null;
-			BlockPos groundEmpty = null;
-			// Test up to 10 blocks up and down, find
-			// a solid ground to place the block on.
-			for (var i = 0; i < 10; i++) {
-				var testBlock = player.Entity.World.BlockAccessor.GetBlock(testPos);
-				if (testBlock.IsReplacableBy(carried.Block)) {
-					if (firstEmpty == null) {
-						if (i > 0) {
-							groundEmpty = testPos;
-							break;
-						} else firstEmpty = testPos;
+			foreach (var carried in player.Entity.GetCarried()) {
+				var testPos = player.Entity.Pos.AsBlockPos;
+				BlockPos firstEmpty  = null;
+				BlockPos groundEmpty = null;
+				// Test up to 10 blocks up and down, find
+				// a solid ground to place the block on.
+				for (var i = 0; i < 10; i++) {
+					var testBlock = player.Entity.World.BlockAccessor.GetBlock(testPos);
+					if (testBlock.IsReplacableBy(carried.Block)) {
+						if (firstEmpty == null) {
+							if (i > 0) {
+								groundEmpty = testPos;
+								break;
+							} else firstEmpty = testPos;
+						}
+					} else if (firstEmpty != null) {
+						groundEmpty = testPos.Add(BlockFacing.UP);
+						break;
 					}
-				} else if (firstEmpty != null) {
-					groundEmpty = testPos.Add(BlockFacing.UP);
-					break;
 				}
+				
+				var placedPos = groundEmpty ?? firstEmpty;
+				if (placedPos == null) return;
+				
+				// FIXME: Drop container contents if block could not be placed.
+				player.Entity.DropCarried(placedPos, carried.Slot);
 			}
-			
-			var placedPos = groundEmpty ?? firstEmpty;
-			if (placedPos == null) return;
-			
-			// FIXME: Drop container contents if block could not be placed.
-			player.Entity.DropCarried(placedPos);
 		}
 	}
 }

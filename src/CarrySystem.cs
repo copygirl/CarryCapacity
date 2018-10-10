@@ -3,13 +3,12 @@ using CarryCapacity.Handler;
 using CarryCapacity.Network;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
-using Vintagestory.API.MathTools;
 using Vintagestory.API.Server;
 
-[assembly: ModInfo( "CarryCapacity",
+[assembly: ModInfo("CarryCapacity",
 	Description = "Adds the capability to carry various things",
 	Website     = "https://github.com/copygirl/CarryCapacity",
-	Authors     = new []{ "copygirl" } )]
+	Authors     = new []{ "copygirl" })]
 
 namespace CarryCapacity
 {
@@ -32,6 +31,7 @@ namespace CarryCapacity
 		public ICoreServerAPI ServerAPI { get; private set; }
 		public IServerNetworkChannel ServerChannel { get; private set; }
 		public DeathHandler DeathHandler { get; private set; }
+		public BackwardCompatHandler BackwardCompatHandler { get; private set; }
 		
 		// Common
 		public CarryHandler CarryHandler { get; private set; }
@@ -49,7 +49,8 @@ namespace CarryCapacity
 			ClientAPI     = api;
 			ClientChannel = api.Network.RegisterChannel(MOD_ID)
 				.RegisterMessageType(typeof(PickUpMessage))
-				.RegisterMessageType(typeof(PlaceDownMessage));
+				.RegisterMessageType(typeof(PlaceDownMessage))
+				.RegisterMessageType(typeof(SwapBackMessage));
 			
 			MouseHandler        = new CustomMouseHandler(api);
 			EntityCarryRenderer = new EntityCarryRenderer(api);
@@ -63,9 +64,11 @@ namespace CarryCapacity
 			ServerAPI     = api;
 			ServerChannel = api.Network.RegisterChannel(MOD_ID)
 				.RegisterMessageType(typeof(PickUpMessage))
-				.RegisterMessageType(typeof(PlaceDownMessage));
+				.RegisterMessageType(typeof(PlaceDownMessage))
+				.RegisterMessageType(typeof(SwapBackMessage));
 			
-			DeathHandler = new DeathHandler(api);
+			DeathHandler          = new DeathHandler(api);
+			BackwardCompatHandler = new BackwardCompatHandler(api);
 			
 			CarryHandler.InitServer();
 		}

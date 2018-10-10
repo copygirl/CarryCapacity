@@ -2,7 +2,7 @@ using System;
 using Vintagestory.API.Client;
 using Vintagestory.API.MathTools;
 
-namespace CarryCapacity
+namespace CarryCapacity.Client
 {
 	public class HudOverlayRenderer : IRenderer
 	{

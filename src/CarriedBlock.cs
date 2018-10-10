@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using Vintagestory.API.Common;
 using Vintagestory.API.Common.Entities;
 using Vintagestory.API.Datastructures;
@@ -10,32 +12,31 @@ namespace CarryCapacity
 	///   Represents a block that has been picked up from
 	///   the world as is being carried around by an entity.
 	///   
-	///   While being carried the data is stored as such: <see cref="Block"/>
-	///   is stored in <see cref="IEntity.WatchedAttributes"/>, meaning it
-	///   will get syncronized to other players. <see cref="BlockEntityData"/>
-	///   is stored in <see cref="IEntity.Attributes"/>, and only server-side.
+	///   While being carried the data is stored as such:
+	///   <see cref="Block"/> is stored in <see cref="IEntity.WatchedAttributes"/>, meaning it will get syncronized to other players.
+	///   <see cref="BlockEntityData"/> is stored in <see cref="IEntity.Attributes"/>, and only server-side.
 	/// </summary>
 	public class CarriedBlock
 	{
-		public static string ATTRIBUTE_ID_STACK { get; } =
-			$"{ CarrySystem.MOD_ID }:CarriedBlock/Stack";
-		public static string ATTRIBUTE_ID_DATA { get; } =
-			$"{ CarrySystem.MOD_ID }:CarriedBlock/Data";
+		/// <summary> Root tree attribute on an entity which stores carried data. </summary>
+		public static string ATTRIBUTE_ID { get; }
+			= $"{ CarrySystem.MOD_ID }:Carried";
 		
-		/// <summary> Before version 0.3.2, attribute held only a block ID. </summary>
-		public static string ATTRIBUTE_ID_OLD { get; } =
-			$"{ CarrySystem.MOD_ID }:CarriedBlock";
 		
+		public CarrySlot Slot { get; }
 		
 		public ItemStack ItemStack { get; }
 		public Block Block => ItemStack.Block;
+		public BlockBehaviorCarryable Behavior =>
+			Block.GetBehaviorOrDefault<BlockBehaviorCarryable>(BlockBehaviorCarryable.DEFAULT);
 		
 		public ITreeAttribute BlockEntityData { get; }
 		
-		public CarriedBlock(ItemStack stack, ITreeAttribute blockEntityData)
+		public CarriedBlock(CarrySlot slot, ItemStack stack, ITreeAttribute blockEntityData)
 		{
 			if (stack == null) throw new ArgumentNullException(nameof(stack));
-			ItemStack = stack;
+			Slot            = slot;
+			ItemStack       = stack;
 			BlockEntityData = blockEntityData;
 		}
 		
@@ -43,60 +44,82 @@ namespace CarryCapacity
 		/// <summary> Gets the <see cref="CarriedBlock"/> currently
 		///           carried by the specified entity, or null if none. </summary>
 		/// <example cref="ArgumentNullException"> Thrown if entity is null. </exception>
-		public static CarriedBlock Get(IEntity entity)
+		public static CarriedBlock Get(IEntity entity, CarrySlot slot)
 		{
 			if (entity == null) throw new ArgumentNullException(nameof(entity));
 			
-			var stack = entity.WatchedAttributes.GetItemstack(ATTRIBUTE_ID_STACK);
-			ITreeAttribute blockEntityData;
-			if (stack != null) {
-				// The ItemStack returned by TreeAttribute.GetItemstack
-				// does not have Block set, so we have to resolve it.
+			var attribute = entity.WatchedAttributes.GetTreeAttribute(ATTRIBUTE_ID);
+			if (attribute == null) return null;
+			
+			var slotAttribute = attribute.GetTreeAttribute(slot.ToString());
+			if (slotAttribute == null) return null;
+			
+			var stack = slotAttribute.GetItemstack("Stack");
+			if (stack?.Class != EnumItemClass.Block) return null;
+			// The ItemStack returned by TreeAttribute.GetItemstack
+			// may not have Block set, so we have to resolve it.
+			if (stack.Block == null) {
 				stack.ResolveBlockOrItem(entity.World);
-				blockEntityData = (entity.World.Side == EnumAppSide.Server)
-					? entity.Attributes.GetTreeAttribute(ATTRIBUTE_ID_DATA) : null;
-			} else {
-				// Code to handle versions before 0.3.2.
-				var blockCode = entity.WatchedAttributes.GetString(ATTRIBUTE_ID_OLD);
-				if (blockCode == null) return null;
-				var block = entity.World.GetBlock(new AssetLocation(blockCode));
-				if (block == null) return null;
-				
-				stack = new ItemStack(block);
-				blockEntityData = (entity.World.Side == EnumAppSide.Server)
-					? entity.Attributes.GetTreeAttribute(ATTRIBUTE_ID_OLD) : null;
+				if (stack.Block == null) return null; // Can't resolve block?
 			}
 			
-			return new CarriedBlock(stack, blockEntityData);
+			var blockEntityData = (entity.World.Side == EnumAppSide.Server)
+				? entity.Attributes.GetTreeAttribute(ATTRIBUTE_ID)?.GetTreeAttribute("Data") : null;
+			
+			return new CarriedBlock(slot, stack, blockEntityData);
 		}
 		
-		/// <summary> Stores this <see cref="CarriedBlock"/>
-		///           as the specified entity's carried block. </summary>
+		/// <summary> Stores the specified stack and blockEntityData (may be null)
+		///           as the <see cref="CarriedBlock"/> of the entity in that slot. </summary>
 		/// <example cref="ArgumentNullException"> Thrown if entity is null. </exception>
-		public void Set(IEntity entity)
+		public static void Set(IEntity entity, CarrySlot slot, ItemStack stack, ITreeAttribute blockEntityData)
 		{
 			if (entity == null) throw new ArgumentNullException(nameof(entity));
 			
-			entity.WatchedAttributes.SetItemstack(ATTRIBUTE_ID_STACK, ItemStack);
+			entity.WatchedAttributes
+				.GetOrAddTreeAttribute(ATTRIBUTE_ID)
+				.GetOrAddTreeAttribute(slot.ToString())
+				.SetItemstack("Stack", stack);
 			
-			if ((entity.World.Side == EnumAppSide.Server)
-				&& (BlockEntityData != null))
-				entity.Attributes[ATTRIBUTE_ID_DATA] = BlockEntityData;
+			if ((entity.World.Side == EnumAppSide.Server) && (blockEntityData != null))
+				entity.Attributes
+					.GetOrAddTreeAttribute(ATTRIBUTE_ID)
+					.GetOrAddTreeAttribute(slot.ToString())
+					["Data"] = blockEntityData;
+			
+			var behavior     = stack.Block.GetBehaviorOrDefault<BlockBehaviorCarryable>(BlockBehaviorCarryable.DEFAULT);
+			var slotSettings = behavior.Slots[slot];
+			
+			if (entity is IEntityAgent agent) {
+				var speed = slotSettings?.WalkSpeedModifier ?? 1.0F;
+				if (speed != 1.0F) agent.SetWalkSpeedModifier($"{ CarrySystem.MOD_ID }:{ slot }", speed, false);
+			}
+			
+			if (slotSettings?.Animation != null)
+				entity.StartAnimation(slotSettings.Animation);
 		}
 		
-		/// <summary> Removes any <see cref="CarriedBlock"/>
-		///           carried by the specified entity. </summary>
+		/// <summary> Stores this <see cref="CarriedBlock"/> as the
+		///           specified entity's carried block in that slot. </summary>
 		/// <example cref="ArgumentNullException"> Thrown if entity is null. </exception>
-		public static void Remove(IEntity entity)
+		public void Set(IEntity entity, CarrySlot slot)
+			=> Set(entity, slot, ItemStack, BlockEntityData);
+		
+		/// <summary> Removes the <see cref="CarriedBlock"/>
+		///           carried by the specified entity in that slot. </summary>
+		/// <example cref="ArgumentNullException"> Thrown if entity is null. </exception>
+		public static void Remove(IEntity entity, CarrySlot slot)
 		{
 			if (entity == null) throw new ArgumentNullException(nameof(entity));
 			
-			entity.WatchedAttributes.RemoveAttribute(ATTRIBUTE_ID_STACK);
-			entity.Attributes.RemoveAttribute(ATTRIBUTE_ID_DATA);
+			if (entity is IEntityAgent agent)
+				agent.RemoveWalkSpeedModifier($"{ CarrySystem.MOD_ID }:{ slot }");
 			
-			// Code to handle versions before 0.3.2.
-			entity.WatchedAttributes.RemoveAttribute(ATTRIBUTE_ID_OLD);
-			entity.Attributes.RemoveAttribute(ATTRIBUTE_ID_OLD);
+			var animation = entity.GetCarried(slot)?.Behavior?.Slots?[slot]?.Animation;
+			if (animation != null) entity.StopAnimation(animation);
+			
+			entity.WatchedAttributes.GetTreeAttribute(ATTRIBUTE_ID)?.RemoveAttribute(slot.ToString());
+			entity.Attributes.GetTreeAttribute(ATTRIBUTE_ID)?.RemoveAttribute(slot.ToString());
 		}
 		
 		
@@ -105,7 +128,7 @@ namespace CarryCapacity
 		///   and position, but doesn't remove it. Returns null if unsuccessful.
 		/// </summary>
 		/// <example cref="ArgumentNullException"> Thrown if world or pos is null. </exception>
-		public static CarriedBlock Get(IWorldAccessor world, BlockPos pos)
+		public static CarriedBlock Get(IWorldAccessor world, BlockPos pos, CarrySlot slot)
 		{
 			if (world == null) throw new ArgumentNullException(nameof(world));
 			if (pos == null) throw new ArgumentNullException(nameof(pos));
@@ -128,7 +151,7 @@ namespace CarryCapacity
 				}
 			}
 			
-			return new CarriedBlock(stack, blockEntityData);
+			return new CarriedBlock(slot, stack, blockEntityData);
 		}
 		
 		/// <summary>
@@ -137,12 +160,12 @@ namespace CarryCapacity
 		/// </summary>
 		/// <example cref="ArgumentNullException"> Thrown if world or pos is null. </exception>
 		public static CarriedBlock PickUp(IWorldAccessor world, BlockPos pos,
-		                                  bool checkIsCarryable = false)
+		                                  CarrySlot slot, bool checkIsCarryable = false)
 		{
-			var carried = Get(world, pos);
+			var carried = Get(world, pos, slot);
 			if (carried == null) return null;
 			
-			if (checkIsCarryable && !carried.Block.IsCarryable()) return null;
+			if (checkIsCarryable && !carried.Block.IsCarryable(slot)) return null;
 			
 			world.BlockAccessor.RemoveBlockEntity(pos);
 			world.BlockAccessor.SetBlock(0, pos);
@@ -170,7 +193,7 @@ namespace CarryCapacity
 			
 			RestoreBlockEntityData(world, selection.Position);
 			PlaySound(selection.Position, entity);
-			if (entity != null) Remove(entity);
+			if (entity != null) Remove(entity, Slot);
 			
 			return true;
 		}
@@ -222,18 +245,28 @@ namespace CarryCapacity
 	public static class CarriedBlockExtensions
 	{
 		/// <summary>
-		///   Returns whether the specified block can be carried.
-		///   Checks if <see cref="BlockBehaviorCarryable"/> is present.
+		///   Returns whether the specified block can be carried in the specified slot.
+		///   Checks if <see cref="BlockBehaviorCarryable"/> is present and has slot enabled.
 		/// </summary>
-		public static bool IsCarryable(this Block block)
-			=> block.HasBehavior<BlockBehaviorCarryable>();
+		public static bool IsCarryable(this Block block, CarrySlot slot)
+			=> (block.GetBehavior<BlockBehaviorCarryable>()?.Slots?[slot] != null);
 		
 		
-		/// <summary> Returns the <see cref="CarriedBlock"/>
-		///           this entity is carrying, or null of none. </summary>
+		/// <summary> Returns the <see cref="CarriedBlock"/> this entity
+		///           is carrying in the specified slot, or null of none. </summary>
 		/// <example cref="ArgumentNullException"> Thrown if entity or pos is null. </exception>
-		public static CarriedBlock GetCarried(this IEntity entity)
-			=> CarriedBlock.Get(entity);
+		public static CarriedBlock GetCarried(this IEntity entity, CarrySlot slot)
+			=> CarriedBlock.Get(entity, slot);
+		
+		/// <summary> Returns all the <see cref="CarriedBlock"/>s this entity is carrying. </summary>
+		/// <example cref="ArgumentNullException"> Thrown if entity or pos is null. </exception>
+		public static IEnumerable<CarriedBlock> GetCarried(this IEntity entity)
+		{
+			foreach (var slot in Enum.GetValues(typeof(CarrySlot)).Cast<CarrySlot>()) {
+				var carried = entity.GetCarried(slot);
+				if (carried != null) yield return carried;
+			}
+		}
 		
 		/// <summary>
 		///   Attempts to get this entity to pick up the block the
@@ -242,13 +275,13 @@ namespace CarryCapacity
 		/// </summary>
 		/// <example cref="ArgumentNullException"> Thrown if entity or pos is null. </exception>
 		public static bool Carry(this IEntity entity, BlockPos pos,
-		                         bool checkIsCarryable = true)
+		                         CarrySlot slot, bool checkIsCarryable = true)
 		{
-			if (CarriedBlock.Get(entity) != null) return false;
-			var carried = CarriedBlock.PickUp(entity.World, pos, checkIsCarryable);
+			if (CarriedBlock.Get(entity, slot) != null) return false;
+			var carried = CarriedBlock.PickUp(entity.World, pos, slot, checkIsCarryable);
 			if (carried == null) return false;
 			
-			carried.Set(entity);
+			carried.Set(entity, slot);
 			carried.PlaySound(pos, entity);
 			return true;
 		}
@@ -259,12 +292,12 @@ namespace CarryCapacity
 		///   selection, returning whether it was successful.
 		/// </summary>
 		/// <example cref="ArgumentNullException"> Thrown if player or selection is null. </exception>
-		public static bool PlaceCarried(this IPlayer player, BlockSelection selection)
+		public static bool PlaceCarried(this IPlayer player, BlockSelection selection, CarrySlot slot)
 		{
 			if (player == null) throw new ArgumentNullException(nameof(player));
 			if (selection == null) throw new ArgumentNullException(nameof(selection));
 			
-			var carried = CarriedBlock.Get(player.Entity);
+			var carried = CarriedBlock.Get(player.Entity, slot);
 			if (carried == null) return false;
 			
 			return carried.PlaceDown(player.Entity.World, selection, player.Entity);
@@ -275,11 +308,11 @@ namespace CarryCapacity
 		///   (if any) at the specified position, returning whether it was successful.
 		/// </summary>
 		/// <example cref="ArgumentNullException"> Thrown if entity or pos is null. </exception>
-		public static bool DropCarried(this IEntity entity, BlockPos pos)
+		public static bool DropCarried(this IEntity entity, BlockPos pos, CarrySlot slot)
 		{
 			if (pos == null) throw new ArgumentNullException(nameof(pos));
 			
-			var carried = CarriedBlock.Get(entity);
+			var carried = CarriedBlock.Get(entity, slot);
 			if (carried == null) return false;
 			
 			var selection = new BlockSelection {
@@ -289,6 +322,26 @@ namespace CarryCapacity
 			};
 			
 			return carried.PlaceDown(entity.World, selection, entity);
+		}
+		
+		/// <summary>
+		///   Attempts to swap the <see cref="CarriedBlock"/> currently carried
+		///   in the entity's Hands slot with the one that's in its Back slot.
+		/// </summary>
+		/// <example cref="ArgumentNullException"> Thrown if entity is null. </exception>
+		public static bool SwapCarriedHandsWithBack(this IEntity entity)
+		{
+			var carriedHands = CarriedBlock.Get(entity, CarrySlot.Hands);
+			var carriedBack  = CarriedBlock.Get(entity, CarrySlot.Back);
+			if ((carriedHands == null) && (carriedBack == null)) return false;
+			
+			CarriedBlock.Remove(entity, CarrySlot.Hands);
+			CarriedBlock.Remove(entity, CarrySlot.Back);
+			
+			if (carriedHands != null) carriedHands.Set(entity, CarrySlot.Back);
+			if (carriedBack != null) carriedBack.Set(entity, CarrySlot.Hands);
+			
+			return true;
 		}
 	}
 }
