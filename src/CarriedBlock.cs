@@ -28,7 +28,7 @@ namespace CarryCapacity
 		public ItemStack ItemStack { get; }
 		public Block Block => ItemStack.Block;
 		public BlockBehaviorCarryable Behavior =>
-			Block.GetBehaviorOrDefault<BlockBehaviorCarryable>(BlockBehaviorCarryable.DEFAULT);
+			Block.GetBehaviorOrDefault(BlockBehaviorCarryable.DEFAULT);
 		
 		public ITreeAttribute BlockEntityData { get; }
 		
@@ -87,7 +87,7 @@ namespace CarryCapacity
 					.GetOrAddTreeAttribute(slot.ToString())
 					["Data"] = blockEntityData;
 			
-			var behavior     = stack.Block.GetBehaviorOrDefault<BlockBehaviorCarryable>(BlockBehaviorCarryable.DEFAULT);
+			var behavior     = stack.Block.GetBehaviorOrDefault(BlockBehaviorCarryable.DEFAULT);
 			var slotSettings = behavior.Slots[slot];
 			
 			if (entity is IEntityAgent agent) {
