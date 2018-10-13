@@ -30,9 +30,9 @@ namespace CarryCapacity.Client
 		public EntityCarryRenderer(ICoreClientAPI api)
 		{
 			API = api;
-			api.Event.RegisterRenderer(this, EnumRenderStage.Opaque);
-			api.Event.RegisterRenderer(this, EnumRenderStage.ShadowFar);
-			api.Event.RegisterRenderer(this, EnumRenderStage.ShadowNear);
+			API.Event.RegisterRenderer(this, EnumRenderStage.Opaque);
+			API.Event.RegisterRenderer(this, EnumRenderStage.ShadowFar);
+			API.Event.RegisterRenderer(this, EnumRenderStage.ShadowNear);
 		}
 		
 		public void Dispose()

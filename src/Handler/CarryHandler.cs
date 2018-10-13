@@ -12,7 +12,7 @@ namespace CarryCapacity.Handler
 	public class CarryHandler
 	{
 		public const float PLACE_SPEED_MODIFIER = 0.75F;
-		public const float SWAP_SPEED_MODIFIER = 1.5F;
+		public const float SWAP_SPEED_MODIFIER  = 1.5F;
 		
 		private CurrentAction _action   = CurrentAction.None;
 		private BlockPos _selectedBlock = null;
@@ -185,8 +185,8 @@ namespace CarryCapacity.Handler
 			var isEmptyHanded = player.Entity.RightHandItemSlot.Empty;
 			var carried       = player.Entity.GetCarried(CarrySlot.Hands);
 			
-			if (!isSneaking || !isEmptyHanded || (carried != null)
-				|| !player.Entity.Carry(message.Position, CarrySlot.Hands))
+			if (!isSneaking || !isEmptyHanded || (carried != null) ||
+			    !player.Entity.Carry(message.Position, CarrySlot.Hands))
 					InvalidCarry(player, message.Position);
 		}
 		
@@ -198,8 +198,8 @@ namespace CarryCapacity.Handler
 			var isEmptyHanded = player.Entity.RightHandItemSlot.Empty;
 			var carried       = player.Entity.GetCarried(CarrySlot.Hands);
 			
-			if (!isSneaking || !isEmptyHanded || (carried == null)
-				|| !PlaceDown(player, carried, message.Selection))
+			if (!isSneaking || !isEmptyHanded || (carried == null) ||
+			    !PlaceDown(player, carried, message.Selection))
 					InvalidCarry(player, message.Selection.Position);
 		}
 		
@@ -207,7 +207,8 @@ namespace CarryCapacity.Handler
 		{
 			var isSneaking    = player.Entity.Controls.Sneak;
 			var isEmptyHanded = player.Entity.RightHandItemSlot.Empty;
-			if (!isSneaking || !isEmptyHanded || !player.Entity.SwapCarriedHandsWithBack())
+			if (!isSneaking || !isEmptyHanded ||
+			    !player.Entity.SwapCarriedHandsWithBack())
 				player.Entity.WatchedAttributes.MarkPathDirty(CarriedBlock.ATTRIBUTE_ID);
 		}
 		

@@ -123,7 +123,7 @@ namespace CarryCapacity
 						_dict.Add(slot, settings = new SlotSettings());
 					
 					if (slotProperties.KeyExists("translation") || slotProperties.KeyExists("rotation") ||
-							slotProperties.KeyExists("origin") || slotProperties.KeyExists("scale"))
+					    slotProperties.KeyExists("origin") || slotProperties.KeyExists("scale"))
 						settings.Transform = GetTransform(slotProperties, DEFAULT_BLOCK_TRANSFORM);
 					
 					settings.Animation = slotProperties["animation"].AsString(settings.Animation);

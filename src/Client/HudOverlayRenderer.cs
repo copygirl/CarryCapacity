@@ -34,7 +34,7 @@ namespace CarryCapacity.Client
 		public HudOverlayRenderer(ICoreClientAPI api)
 		{
 			API = api;
-			api.Event.RegisterRenderer(this, EnumRenderStage.Ortho);
+			API.Event.RegisterRenderer(this, EnumRenderStage.Ortho);
 			UpdateCirceMesh(1);
 		}
 		

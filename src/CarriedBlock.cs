@@ -27,8 +27,8 @@ namespace CarryCapacity
 		
 		public ItemStack ItemStack { get; }
 		public Block Block => ItemStack.Block;
-		public BlockBehaviorCarryable Behavior =>
-			Block.GetBehaviorOrDefault(BlockBehaviorCarryable.DEFAULT);
+		public BlockBehaviorCarryable Behavior
+			=> Block.GetBehaviorOrDefault(BlockBehaviorCarryable.DEFAULT);
 		
 		public ITreeAttribute BlockEntityData { get; }
 		
@@ -123,10 +123,8 @@ namespace CarryCapacity
 		}
 		
 		
-		/// <summary>
-		///   Creates a <see cref="CarriedBlock"/> from the specified world
-		///   and position, but doesn't remove it. Returns null if unsuccessful.
-		/// </summary>
+		/// <summary> Creates a <see cref="CarriedBlock"/> from the specified world
+		///           and position, but doesn't remove it. Returns null if unsuccessful. </summary>
 		/// <example cref="ArgumentNullException"> Thrown if world or pos is null. </exception>
 		public static CarriedBlock Get(IWorldAccessor world, BlockPos pos, CarrySlot slot)
 		{
@@ -154,10 +152,8 @@ namespace CarryCapacity
 			return new CarriedBlock(slot, stack, blockEntityData);
 		}
 		
-		/// <summary>
-		///   Attempts to pick up a <see cref="CarriedBlock"/> from the specified
-		///   world and position, removing it. Returns null if unsuccessful.
-		/// </summary>
+		/// <summary> Attempts to pick up a <see cref="CarriedBlock"/> from the specified
+		///           world and position, removing it. Returns null if unsuccessful. </summary>
 		/// <example cref="ArgumentNullException"> Thrown if world or pos is null. </exception>
 		public static CarriedBlock PickUp(IWorldAccessor world, BlockPos pos,
 		                                  CarrySlot slot, bool checkIsCarryable = false)
@@ -172,10 +168,8 @@ namespace CarryCapacity
 			return carried;
 		}
 		
-		/// <summary>
-		///   Attempts to place down a <see cref="CarriedBlock"/> at the specified world,
-		///   selection and by the entity (if any), returning whether it was successful.
-		/// </summary>
+		/// <summary> Attempts to place down a <see cref="CarriedBlock"/> at the specified world,
+		///           selection and by the entity (if any), returning whether it was successful. </summary>
 		/// <example cref="ArgumentNullException"> Thrown if world or pos is null. </exception>
 		public bool PlaceDown(IWorldAccessor world, BlockSelection selection, IEntity entity = null)
 		{
@@ -244,10 +238,8 @@ namespace CarryCapacity
 	
 	public static class CarriedBlockExtensions
 	{
-		/// <summary>
-		///   Returns whether the specified block can be carried in the specified slot.
-		///   Checks if <see cref="BlockBehaviorCarryable"/> is present and has slot enabled.
-		/// </summary>
+		/// <summary> Returns whether the specified block can be carried in the specified slot.
+		///           Checks if <see cref="BlockBehaviorCarryable"/> is present and has slot enabled. </summary>
 		public static bool IsCarryable(this Block block, CarrySlot slot)
 			=> (block.GetBehavior<BlockBehaviorCarryable>()?.Slots?[slot] != null);
 		
@@ -303,10 +295,8 @@ namespace CarryCapacity
 			return carried.PlaceDown(player.Entity.World, selection, player.Entity);
 		}
 		
-		/// <summary>
-		///   Attempts to make this entity drop its <see cref="CarriedBlock"/>
-		///   (if any) at the specified position, returning whether it was successful.
-		/// </summary>
+		/// <summary> Attempts to make this entity drop its <see cref="CarriedBlock"/>
+		///           (if any) at the specified position, returning whether it was successful. </summary>
 		/// <example cref="ArgumentNullException"> Thrown if entity or pos is null. </exception>
 		public static bool DropCarried(this IEntity entity, BlockPos pos, CarrySlot slot)
 		{
