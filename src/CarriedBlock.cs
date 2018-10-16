@@ -48,10 +48,8 @@ namespace CarryCapacity
 		{
 			if (entity == null) throw new ArgumentNullException(nameof(entity));
 			
-			var attribute = entity.WatchedAttributes.GetTreeAttribute(ATTRIBUTE_ID);
-			if (attribute == null) return null;
-			
-			var slotAttribute = attribute.GetTreeAttribute(slot.ToString());
+			var slotAttribute = entity.WatchedAttributes
+				.TryGet<ITreeAttribute>(ATTRIBUTE_ID, slot.ToString());
 			if (slotAttribute == null) return null;
 			
 			var stack = slotAttribute.GetItemstack("Stack");
@@ -64,8 +62,8 @@ namespace CarryCapacity
 			}
 			
 			var blockEntityData = (entity.World.Side == EnumAppSide.Server)
-				? entity.Attributes.GetTreeAttribute(ATTRIBUTE_ID)
-					?.GetTreeAttribute(slot.ToString())?.GetTreeAttribute("Data") : null;
+				? entity.Attributes.TryGet<ITreeAttribute>(ATTRIBUTE_ID, slot.ToString(), "Data")
+				: null;
 			
 			return new CarriedBlock(slot, stack, blockEntityData);
 		}
@@ -77,16 +75,10 @@ namespace CarryCapacity
 		{
 			if (entity == null) throw new ArgumentNullException(nameof(entity));
 			
-			entity.WatchedAttributes
-				.GetOrAddTreeAttribute(ATTRIBUTE_ID)
-				.GetOrAddTreeAttribute(slot.ToString())
-				.SetItemstack("Stack", stack);
+			entity.WatchedAttributes.Set(stack, ATTRIBUTE_ID, slot.ToString(), "Stack");
 			
 			if ((entity.World.Side == EnumAppSide.Server) && (blockEntityData != null))
-				entity.Attributes
-					.GetOrAddTreeAttribute(ATTRIBUTE_ID)
-					.GetOrAddTreeAttribute(slot.ToString())
-					["Data"] = blockEntityData;
+				entity.Attributes.Set(blockEntityData, ATTRIBUTE_ID, slot.ToString(), "Data");
 			
 			var behavior     = stack.Block.GetBehaviorOrDefault(BlockBehaviorCarryable.DEFAULT);
 			var slotSettings = behavior.Slots[slot];
@@ -119,8 +111,8 @@ namespace CarryCapacity
 			var animation = entity.GetCarried(slot)?.Behavior?.Slots?[slot]?.Animation;
 			if (animation != null) entity.StopAnimation(animation);
 			
-			entity.WatchedAttributes.GetTreeAttribute(ATTRIBUTE_ID)?.RemoveAttribute(slot.ToString());
-			entity.Attributes.GetTreeAttribute(ATTRIBUTE_ID)?.RemoveAttribute(slot.ToString());
+			entity.WatchedAttributes.Remove(ATTRIBUTE_ID, slot.ToString());
+			entity.Attributes.Remove(ATTRIBUTE_ID, slot.ToString());
 		}
 		
 		
