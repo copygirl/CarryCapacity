@@ -24,6 +24,7 @@ namespace CarryCapacity.Handler
 			
 			var oldItemStack = entity.WatchedAttributes.GetItemstack(oldStackAttributeID);
 			if (oldItemStack == null) return;
+			oldItemStack.ResolveBlockOrItem(entity.World);
 			var oldBlockEntityData = entity.Attributes.GetTreeAttribute(oldDataAttributeID);
 			
 			entity.WatchedAttributes.RemoveAttribute(oldStackAttributeID);
