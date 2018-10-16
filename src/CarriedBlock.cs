@@ -64,7 +64,8 @@ namespace CarryCapacity
 			}
 			
 			var blockEntityData = (entity.World.Side == EnumAppSide.Server)
-				? entity.Attributes.GetTreeAttribute(ATTRIBUTE_ID)?.GetTreeAttribute("Data") : null;
+				? entity.Attributes.GetTreeAttribute(ATTRIBUTE_ID)
+					?.GetTreeAttribute(slot.ToString())?.GetTreeAttribute("Data") : null;
 			
 			return new CarriedBlock(slot, stack, blockEntityData);
 		}
