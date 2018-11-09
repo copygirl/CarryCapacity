@@ -29,6 +29,9 @@ namespace CarryCapacity.Handler
 			Mod.ClientAPI.Event.OnMouseDown += OnMouseDown;
 			Mod.ClientAPI.Event.OnMouseUp   += OnMouseUp;
 			Mod.ClientAPI.Event.RegisterGameTickListener(OnGameTick, 0);
+			
+			Mod.ClientAPI.Event.ActiveHotbarSlotChanged +=
+				(ev) => OnHotbarSlotChanged(Mod.ClientAPI.World.Player.Entity);
 		}
 		
 		public void InitServer()
@@ -39,6 +42,9 @@ namespace CarryCapacity.Handler
 				.SetMessageHandler<SwapBackMessage>(OnSwapBackMessage);
 			
 			Mod.ServerAPI.Event.OnEntitySpawn += OnEntitySpawn;
+			
+			Mod.ServerAPI.Event.ActiveHotbarSlotChanged +=
+				(player, ev) => OnHotbarSlotChanged(player.Entity, ev);
 		}
 		
 		
@@ -176,6 +182,15 @@ namespace CarryCapacity.Handler
 			_action   = CurrentAction.None;
 			_timeHeld = 0.0F;
 			Mod.HudOverlayRenderer.CircleVisible = false;
+		}
+		
+		
+		public void OnHotbarSlotChanged(IEntityAgent entity, ActiveHotbarSlotChangedEvent ev)
+		{
+			// If the player is carrying something in their hands,
+			// prevent them from changing their active hotbar slot.
+			if (ev.CanCancel && (entity.GetCarried(CarrySlot.Hands) != null))
+				ev.Cancel();
 		}
 		
 		
