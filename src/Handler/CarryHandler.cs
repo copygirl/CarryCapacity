@@ -92,11 +92,9 @@ namespace CarryCapacity.Handler
 			// TODO: Only allow close blocks to be picked up.
 			// TODO: Don't allow the block underneath to change?
 			
-			var isSneaking    = player.Entity.Controls.Sneak;
-			var isEmptyHanded = player.Entity.RightHandItemSlot.Empty;
 			// Only perform action if sneaking with empty hands.
-			if (!isSneaking || !isEmptyHanded)
-				{ OnMouseUp(); return; }
+			if (!CanInteract(player.Entity))
+			  { OnMouseUp(); return; }
 			
 			var carriedHands = player.Entity.GetCarried(CarrySlot.Hands);
 			BlockSelection selection = null;
@@ -185,11 +183,8 @@ namespace CarryCapacity.Handler
 		{
 			// FIXME: Do at least some validation of this data.
 			
-			var isSneaking    = player.Entity.Controls.Sneak;
-			var isEmptyHanded = player.Entity.RightHandItemSlot.Empty;
-			var carried       = player.Entity.GetCarried(CarrySlot.Hands);
-			
-			if (!isSneaking || !isEmptyHanded || (carried != null) ||
+			var carried = player.Entity.GetCarried(CarrySlot.Hands);
+			if (!CanInteract(player.Entity) || (carried != null) ||
 			    !player.Entity.Carry(message.Position, CarrySlot.Hands))
 				InvalidCarry(player, message.Position);
 		}
@@ -198,22 +193,28 @@ namespace CarryCapacity.Handler
 		{
 			// FIXME: Do at least some validation of this data.
 			
-			var isSneaking    = player.Entity.Controls.Sneak;
-			var isEmptyHanded = player.Entity.RightHandItemSlot.Empty;
-			var carried       = player.Entity.GetCarried(CarrySlot.Hands);
-			
-			if (!isSneaking || !isEmptyHanded || (carried == null) ||
+			var carried = player.Entity.GetCarried(CarrySlot.Hands);
+			if (!CanInteract(player.Entity) || (carried == null) ||
 			    !PlaceDown(player, carried, message.Selection))
 				InvalidCarry(player, message.Selection.Position);
 		}
 		
 		public static void OnSwapBackMessage(IPlayer player, SwapBackMessage message)
 		{
-			var isSneaking    = player.Entity.Controls.Sneak;
-			var isEmptyHanded = player.Entity.RightHandItemSlot.Empty;
-			if (!isSneaking || !isEmptyHanded ||
-			    !player.Entity.SwapCarriedHandsWithBack())
+			if (!CanInteract(player.Entity) || !player.Entity.SwapCarriedHandsWithBack())
 				player.Entity.WatchedAttributes.MarkPathDirty(CarriedBlock.ATTRIBUTE_ID);
+		}
+		
+		
+		/// <summary>
+		///   Returns whether the specified entity has the required prerequisites
+		///   to interact using CarryCapacity: Must be sneaking with an empty hand.
+		/// </summary>
+		public static bool CanInteract(IEntityAgent entity)
+		{
+			var isSneaking    = entity.Controls.Sneak;
+			var isEmptyHanded = entity.RightHandItemSlot.Empty;
+			return (isSneaking && isEmptyHanded);
 		}
 		
 		public static bool CanPlace(IWorldAccessor world, BlockSelection selection,
