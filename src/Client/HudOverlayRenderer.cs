@@ -83,7 +83,7 @@ namespace CarryCapacity.Client
 			
 			var r = ((CIRCLE_COLOR >> 16) & 0xFF) / 255.0F;
 			var g = ((CIRCLE_COLOR >>  8) & 0xFF) / 255.0F;
-			var b = ((CIRCLE_COLOR      ) & 0xFF) / 255.0F;
+			var b = ( CIRCLE_COLOR        & 0xFF) / 255.0F;
 			var color = new Vec4f(r, g, b, _circleAlpha);
 			
 			shader.Uniform("rgbaIn", color);
@@ -93,10 +93,14 @@ namespace CarryCapacity.Client
 			shader.Uniform("noTexture", 1.0F);
 			shader.UniformMatrix("projectionMatrix", rend.CurrentProjectionMatrix);
 			
-			// TODO: Render at mouse cursor, not center of screen.
-			//       Gotta wait for the API to add MouseMove event.
-			var x = API.Render.FrameWidth / 2;
-			var y = API.Render.FrameHeight / 2;
+			int x, y;
+			if (API.Input.MouseCursorVisible) {
+				x = API.Input.MouseX;
+				y = API.Input.MouseY;
+			} else {
+				x = API.Render.FrameWidth / 2;
+				y = API.Render.FrameHeight / 2;
+			}
 			
 			rend.GlPushMatrix();
 				rend.GlTranslate(x, y, 0);
