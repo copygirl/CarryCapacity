@@ -76,6 +76,7 @@ namespace CarryCapacity
 			if (entity == null) throw new ArgumentNullException(nameof(entity));
 			
 			entity.WatchedAttributes.Set(stack, ATTRIBUTE_ID, slot.ToString(), "Stack");
+			((SyncedTreeAttribute)entity.WatchedAttributes).MarkPathDirty(ATTRIBUTE_ID);
 			
 			if ((entity.World.Side == EnumAppSide.Server) && (blockEntityData != null))
 				entity.Attributes.Set(blockEntityData, ATTRIBUTE_ID, slot.ToString(), "Data");
@@ -112,6 +113,7 @@ namespace CarryCapacity
 			if (animation != null) entity.StopAnimation(animation);
 			
 			entity.WatchedAttributes.Remove(ATTRIBUTE_ID, slot.ToString());
+			((SyncedTreeAttribute)entity.WatchedAttributes).MarkPathDirty(ATTRIBUTE_ID);
 			entity.Attributes.Remove(ATTRIBUTE_ID, slot.ToString());
 		}
 		

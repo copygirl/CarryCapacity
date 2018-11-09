@@ -187,7 +187,7 @@ namespace CarryCapacity.Handler
 			
 			if (!isSneaking || !isEmptyHanded || (carried != null) ||
 			    !player.Entity.Carry(message.Position, CarrySlot.Hands))
-					InvalidCarry(player, message.Position);
+				InvalidCarry(player, message.Position);
 		}
 		
 		public static void OnPlaceDownMessage(IPlayer player, PlaceDownMessage message)
@@ -200,7 +200,7 @@ namespace CarryCapacity.Handler
 			
 			if (!isSneaking || !isEmptyHanded || (carried == null) ||
 			    !PlaceDown(player, carried, message.Selection))
-					InvalidCarry(player, message.Selection.Position);
+				InvalidCarry(player, message.Selection.Position);
 		}
 		
 		public static void OnSwapBackMessage(IPlayer player, SwapBackMessage message)
