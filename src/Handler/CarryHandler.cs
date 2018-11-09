@@ -1,4 +1,5 @@
 using CarryCapacity.Network;
+using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Vintagestory.API.Common.Entities;
 using Vintagestory.API.MathTools;
@@ -16,6 +17,7 @@ namespace CarryCapacity.Handler
 		
 		private CurrentAction _action   = CurrentAction.None;
 		private BlockPos _selectedBlock = null;
+		private float _timeHeld         = 0.0F;
 		
 		private CarrySystem Mod { get; }
 		
@@ -24,9 +26,9 @@ namespace CarryCapacity.Handler
 		
 		public void InitClient()
 		{
-			Mod.MouseHandler.OnRightMousePressed  += OnPress;
-			Mod.MouseHandler.OnRightMouseHeld     += OnHold;
-			Mod.MouseHandler.OnRightMouseReleased += OnRelease;
+			Mod.ClientAPI.Event.OnMouseDown += OnMouseDown;
+			Mod.ClientAPI.Event.OnMouseUp   += OnMouseUp;
+			Mod.ClientAPI.Event.RegisterGameTickListener(OnGameTick, 0);
 		}
 		
 		public void InitServer()
@@ -48,10 +50,10 @@ namespace CarryCapacity.Handler
 		}
 		
 		
-		public void OnPress()
+		public void OnMouseDown(MouseEvent e)
 		{
-			var world        = Mod.ClientAPI.World;
-			var player       = world.Player;
+			var world  = Mod.ClientAPI.World;
+			var player = world.Player;
 			var selection    = player.CurrentBlockSelection;
 			var carriedHands = player.Entity.GetCarried(CarrySlot.Hands);
 			var carriedBack  = player.Entity.GetCarried(CarrySlot.Back);
@@ -77,10 +79,10 @@ namespace CarryCapacity.Handler
 			else if ((carriedBack != null) && (carriedBack.Behavior.Slots[CarrySlot.Hands] != null))
 				_action = CurrentAction.SwapBack;
 			
-			OnHold(0.0F);
+			OnGameTick(0.0F);
 		}
 		
-		public void OnHold(float time)
+		public void OnGameTick(float deltaTime)
 		{
 			if (_action == CurrentAction.None) return;
 			var world  = Mod.ClientAPI.World;
@@ -94,7 +96,7 @@ namespace CarryCapacity.Handler
 			var isEmptyHanded = player.Entity.RightHandItemSlot.Empty;
 			// Only perform action if sneaking with empty hands.
 			if (!isSneaking || !isEmptyHanded)
-				{ OnRelease(); return; }
+				{ OnMouseUp(); return; }
 			
 			var carriedHands = player.Entity.GetCarried(CarrySlot.Hands);
 			BlockSelection selection = null;
@@ -107,14 +109,14 @@ namespace CarryCapacity.Handler
 					// Ensure the player hasn't in the meantime
 					// picked up / placed down something somehow.
 					if ((_action == CurrentAction.PickUp) == (carriedHands != null))
-						{ OnRelease(); return; }
+						{ OnMouseUp(); return; }
 					
 					selection     = player.CurrentBlockSelection;
 					var position  = (_action == CurrentAction.PlaceDown)
 						? GetPlacedPosition(world, selection, carriedHands.Block)
 						: selection?.Position;
 					// Make sure the player is still looking at the same block.
-					if (!_selectedBlock.Equals(position)) { OnRelease(); return; }
+					if (!_selectedBlock.Equals(position)) { OnMouseUp(); return; }
 					
 					// Get the block behavior from either the block
 					// to be picked up or the currently carried block.
@@ -130,7 +132,7 @@ namespace CarryCapacity.Handler
 					// Ensure the player hasn't in the meantime
 					// put something in their hands / back.
 					if ((carriedHands != null) == (carriedBack != null))
-						{ OnRelease(); return; }
+						{ OnMouseUp(); return; }
 					
 					var targetSlot = (carriedHands != null) ? CarrySlot.Back : CarrySlot.Hands;
 					behavior       = (carriedHands != null) ? carriedHands.Behavior : carriedBack.Behavior;
@@ -148,7 +150,8 @@ namespace CarryCapacity.Handler
 				case CurrentAction.SwapBack:  requiredTime *= SWAP_SPEED_MODIFIER;  break;
 			}
 			
-			var progress = (time / requiredTime);
+			_timeHeld += deltaTime;
+			var progress = (_timeHeld / requiredTime);
 			Mod.HudOverlayRenderer.CircleProgress = progress;
 			if (progress <= 1.0F) return;
 			
@@ -167,12 +170,13 @@ namespace CarryCapacity.Handler
 					break;
 			}
 			
-			OnRelease();
+			OnMouseUp();
 		}
 		
-		public void OnRelease()
+		public void OnMouseUp(MouseEvent e = null)
 		{
-			_action = CurrentAction.None;
+			_action   = CurrentAction.None;
+			_timeHeld = 0.0F;
 			Mod.HudOverlayRenderer.CircleVisible = false;
 		}
 		

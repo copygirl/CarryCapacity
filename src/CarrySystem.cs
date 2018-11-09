@@ -23,7 +23,6 @@ namespace CarryCapacity
 		// Client
 		public ICoreClientAPI ClientAPI { get; private set; }
 		public IClientNetworkChannel ClientChannel { get; private set; }
-		public CustomMouseHandler MouseHandler { get; private set; }
 		public EntityCarryRenderer EntityCarryRenderer { get; private set; }
 		public HudOverlayRenderer HudOverlayRenderer { get; private set; }
 		
@@ -52,7 +51,6 @@ namespace CarryCapacity
 				.RegisterMessageType(typeof(PlaceDownMessage))
 				.RegisterMessageType(typeof(SwapBackMessage));
 			
-			MouseHandler        = new CustomMouseHandler(api);
 			EntityCarryRenderer = new EntityCarryRenderer(api);
 			HudOverlayRenderer  = new HudOverlayRenderer(api);
 			
