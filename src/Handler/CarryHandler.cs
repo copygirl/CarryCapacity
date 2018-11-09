@@ -31,7 +31,7 @@ namespace CarryCapacity.Handler
 			Mod.ClientAPI.Event.RegisterGameTickListener(OnGameTick, 0);
 			
 			Mod.ClientAPI.Event.ActiveHotbarSlotChanged +=
-				(ev) => OnHotbarSlotChanged(Mod.ClientAPI.World.Player.Entity);
+				(ev) => OnHotbarSlotChanged(Mod.ClientAPI.World.Player.Entity, ev);
 		}
 		
 		public void InitServer()
@@ -56,7 +56,7 @@ namespace CarryCapacity.Handler
 		}
 		
 		
-		public void OnMouseDown(MouseEvent e)
+		public void OnMouseDown(MouseEvent ev)
 		{
 			var world  = Mod.ClientAPI.World;
 			var player = world.Player;
@@ -64,8 +64,15 @@ namespace CarryCapacity.Handler
 			var carriedHands = player.Entity.GetCarried(CarrySlot.Hands);
 			var carriedBack  = player.Entity.GetCarried(CarrySlot.Back);
 			
+			// If something is being carried in-hand, make sure to prevent the default action.
+			if (carriedHands != null) ev.Handled = true;
+			// FIXME: This prevents interactions in the GUI. We need dedicated events for block/entity interactions.
+			
+			// Only continue if the right (interact) mouse button is held and player is sneaking with an empty hand.
+			if ((ev.Button != EnumMouseButton.Right) || !CanInteract(player.Entity)) return;
+			
 			if (carriedHands != null) {
-			  // If something's being carried in-hand and aiming at block, try to place it.
+				// If something's being carried in-hand and aiming at block, try to place it.
 				if (selection != null) {
 					// Make sure it's put on a solid top face of a block.
 					if (!CanPlace(world, selection, carriedHands)) return;
@@ -85,7 +92,8 @@ namespace CarryCapacity.Handler
 			else if ((carriedBack != null) && (carriedBack.Behavior.Slots[CarrySlot.Hands] != null))
 				_action = CurrentAction.SwapBack;
 			
-			OnGameTick(0.0F);
+			OnGameTick(0.0F);  // Run this once to for validation. May reset action to None.
+			ev.Handled = true; // Prevent default action. Don't want to interact with blocks.
 		}
 		
 		public void OnGameTick(float deltaTime)
@@ -177,7 +185,7 @@ namespace CarryCapacity.Handler
 			OnMouseUp();
 		}
 		
-		public void OnMouseUp(MouseEvent e = null)
+		public void OnMouseUp(MouseEvent ev = null)
 		{
 			_action   = CurrentAction.None;
 			_timeHeld = 0.0F;

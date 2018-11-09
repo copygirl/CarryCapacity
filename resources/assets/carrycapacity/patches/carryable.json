@@ -1,5 +1,5 @@
 [
-  { file: "game:blocktypes/wood/generic/chest", op: "add", path: "/behaviors/0", value: {
+  { file: "game:blocktypes/wood/generic/chest", op: "add", path: "/behaviors/-", value: {
     name: "Carryable",
     properties: {
       translation: [ 0.0625, 0, 0 ],
@@ -10,7 +10,7 @@
       }
     }
   } },
-  { file: "game:blocktypes/stationarybasket", op: "add", path: "/behaviors/0", value: {
+  { file: "game:blocktypes/stationarybasket", op: "add", path: "/behaviors/-", value: {
     name: "Carryable",
     properties: {
       interactDelay: 0.4,

@@ -51,20 +51,6 @@ namespace CarryCapacity
 			Slots.Initialize(properties["slots"]);
 		}
 		
-		public override bool OnBlockInteractStart(
-			IWorldAccessor world, IPlayer byPlayer,
-			BlockSelection blockSel, ref EnumHandling handling)
-		{
-			var isSneaking    = byPlayer.Entity.Controls.Sneak;
-			var isEmptyHanded = byPlayer.Entity.RightHandItemSlot.Empty;
-			// Prevent default action if sneaking and empty handed,
-			// as we want to handle block pickup in this case.
-			if (isSneaking && isEmptyHanded) {
-				handling = EnumHandling.PreventDefault;
-				return false;
-			} else return true;
-		}
-		
 		
 		private static bool TryGetFloat(JsonObject json, string key, out float result)
 		{
