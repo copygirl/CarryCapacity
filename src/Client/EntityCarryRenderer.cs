@@ -155,10 +155,11 @@ namespace CarryCapacity.Client
 						API.Render.RenderMesh(renderInfo.ModelRef);
 					} else {
 						var prog = renderApi.PreparedStandardShader((int)entity.Pos.X, (int)entity.Pos.Y, (int)entity.Pos.Z);
-						prog.Tex2D       = renderInfo.TextureId;
-						prog.AlphaTest   = 0.01f;
-						prog.ViewMatrix  = viewMat;
-						prog.ModelMatrix = modelMat;
+						prog.Tex2D            = renderInfo.TextureId;
+						prog.AlphaTest        = 0.01f;
+						prog.ViewMatrix       = viewMat;
+						prog.ModelMatrix      = modelMat;
+						prog.DontWarpVertices = 1;
 						
 						API.Render.RenderMesh(renderInfo.ModelRef);
 						
