@@ -2,13 +2,12 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Vintagestory.API.Client;
-using Vintagestory.API.Common;
 using Vintagestory.API.MathTools;
 using Vintagestory.GameContent;
 
 namespace CarryCapacity.Client
 {
-	public class EntityCarryRenderer : IRenderer
+  public class EntityCarryRenderer : IRenderer
 	{
 		private static readonly Dictionary<CarrySlot, SlotRenderSettings> _renderSettings
 			= new Dictionary<CarrySlot, SlotRenderSettings> {
@@ -87,8 +86,8 @@ namespace CarryCapacity.Client
 				if (renderer == null) continue; // Apparently this can end up being null?
 				// Reported to Tyron, so it might be fixed. Leaving it in for now just in case.
 				
-				var animator = (BlendEntityAnimator)renderer.curAnimator;
-				if (animator == null) throw new Exception("renderer.curAnimator is null!");
+				var animator = entity.AnimManager.Animator;
+				if (animator == null) throw new Exception("entity.AnimManager.Animator is null!");
 				
 				foreach (var carried in allCarried) {
 					var inHands = (carried.Slot == CarrySlot.Hands);
@@ -122,8 +121,9 @@ namespace CarryCapacity.Client
 					} else {
 						modelMat = Mat4f.CloneIt(renderer.ModelMat);
 						
-						if (!animator.AttachmentPointByCode.TryGetValue(renderSettings.AttachmentPoint, out var attachPointAndPose)) continue;
-						var animModelMat = attachPointAndPose.Pose.AnimModelMatrix;
+						var attachPointAndPose = animator.GetAttachmentPointPose(renderSettings.AttachmentPoint);
+						if (attachPointAndPose == null) continue;
+						var animModelMat = attachPointAndPose.CachedPose.AnimModelMatrix;
 						Mat4f.Mul(modelMat, modelMat, animModelMat);
 						
 						// Apply attachment point transform.

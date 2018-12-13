@@ -94,12 +94,12 @@ namespace CarryCapacity.Client
 			shader.UniformMatrix("projectionMatrix", rend.CurrentProjectionMatrix);
 			
 			int x, y;
-			if (API.Input.MouseCursorVisible) {
-				x = API.Input.MouseX;
-				y = API.Input.MouseY;
-			} else {
+			if (API.Input.MouseGrabbed) {
 				x = API.Render.FrameWidth / 2;
 				y = API.Render.FrameHeight / 2;
+			} else {
+				x = API.Input.MouseX;
+				y = API.Input.MouseY;
 			}
 			
 			rend.GlPushMatrix();

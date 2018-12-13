@@ -26,8 +26,8 @@ namespace CarryCapacity.Handler
 		
 		public void InitClient()
 		{
-			Mod.ClientAPI.Event.OnMouseDown += OnMouseDown;
-			Mod.ClientAPI.Event.OnMouseUp   += OnMouseUp;
+			Mod.ClientAPI.Event.MouseDown += OnMouseDown;
+			Mod.ClientAPI.Event.MouseUp   += OnMouseUp;
 			Mod.ClientAPI.Event.RegisterGameTickListener(OnGameTick, 0);
 			
 			Mod.ClientAPI.Event.ActiveHotbarSlotChanged +=
@@ -193,7 +193,7 @@ namespace CarryCapacity.Handler
 		}
 		
 		
-		public void OnHotbarSlotChanged(IEntityAgent entity, ActiveHotbarSlotChangedEvent ev)
+		public void OnHotbarSlotChanged(EntityAgent entity, ActiveHotbarSlotChangedEvent ev)
 		{
 			// If the player is carrying something in their hands,
 			// prevent them from changing their active hotbar slot.
@@ -233,7 +233,7 @@ namespace CarryCapacity.Handler
 		///   Returns whether the specified entity has the required prerequisites
 		///   to interact using CarryCapacity: Must be sneaking with an empty hand.
 		/// </summary>
-		public static bool CanInteract(IEntityAgent entity)
+		public static bool CanInteract(EntityAgent entity)
 		{
 			var isSneaking    = entity.Controls.Sneak;
 			var isEmptyHanded = entity.RightHandItemSlot.Empty;
