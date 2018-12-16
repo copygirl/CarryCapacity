@@ -30,8 +30,8 @@ namespace CarryCapacity.Handler
 			Mod.ClientAPI.Event.MouseUp   += OnMouseUp;
 			Mod.ClientAPI.Event.RegisterGameTickListener(OnGameTick, 0);
 			
-			Mod.ClientAPI.Event.ActiveHotbarSlotChanged +=
-				(ev) => OnHotbarSlotChanged(Mod.ClientAPI.World.Player.Entity, ev);
+			Mod.ClientAPI.Event.BeforeActiveSlotChanged +=
+				(ev) => OnBeforeActiveSlotChanged(Mod.ClientAPI.World.Player.Entity, ev);
 		}
 		
 		public void InitServer()
@@ -43,8 +43,8 @@ namespace CarryCapacity.Handler
 			
 			Mod.ServerAPI.Event.OnEntitySpawn += OnEntitySpawn;
 			
-			Mod.ServerAPI.Event.ActiveHotbarSlotChanged +=
-				(player, ev) => OnHotbarSlotChanged(player.Entity, ev);
+			Mod.ServerAPI.Event.BeforeActiveSlotChanged +=
+				(player, ev) => OnBeforeActiveSlotChanged(player.Entity, ev);
 		}
 		
 		
@@ -193,12 +193,13 @@ namespace CarryCapacity.Handler
 		}
 		
 		
-		public void OnHotbarSlotChanged(EntityAgent entity, ActiveHotbarSlotChangedEvent ev)
+		public EnumHandling OnBeforeActiveSlotChanged(EntityAgent entity, ActiveSlotChangeEventArgs ev)
 		{
 			// If the player is carrying something in their hands,
 			// prevent them from changing their active hotbar slot.
-			if (ev.CanCancel && (entity.GetCarried(CarrySlot.Hands) != null))
-				ev.Cancel();
+			return (entity.GetCarried(CarrySlot.Hands) != null)
+				? EnumHandling.PreventDefault
+				: EnumHandling.NotHandled;
 		}
 		
 		
