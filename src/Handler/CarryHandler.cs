@@ -30,8 +30,10 @@ namespace CarryCapacity.Handler
 			Mod.ClientAPI.Event.MouseUp   += OnMouseUp;
 			Mod.ClientAPI.Event.RegisterGameTickListener(OnGameTick, 0);
 			
-			Mod.ClientAPI.Event.BeforeActiveSlotChanged +=
-				(ev) => OnBeforeActiveSlotChanged(Mod.ClientAPI.World.Player.Entity, ev);
+			// FIXME: Disabled this portion of the code, since the updated event
+			//        isn't available because my merge request wasn't accepted yet.
+			// Mod.ClientAPI.Event.BeforeActiveSlotChanged +=
+			// 	(ev) => OnBeforeActiveSlotChanged(Mod.ClientAPI.World.Player.Entity, ev);
 		}
 		
 		public void InitServer()
@@ -43,8 +45,8 @@ namespace CarryCapacity.Handler
 			
 			Mod.ServerAPI.Event.OnEntitySpawn += OnEntitySpawn;
 			
-			Mod.ServerAPI.Event.BeforeActiveSlotChanged +=
-				(player, ev) => OnBeforeActiveSlotChanged(player.Entity, ev);
+			// Mod.ServerAPI.Event.BeforeActiveSlotChanged +=
+			// 	(player, ev) => OnBeforeActiveSlotChanged(player.Entity, ev);
 		}
 		
 		
@@ -193,14 +195,14 @@ namespace CarryCapacity.Handler
 		}
 		
 		
-		public EnumHandling OnBeforeActiveSlotChanged(EntityAgent entity, ActiveSlotChangeEventArgs ev)
-		{
-			// If the player is carrying something in their hands,
-			// prevent them from changing their active hotbar slot.
-			return (entity.GetCarried(CarrySlot.Hands) != null)
-				? EnumHandling.PreventDefault
-				: EnumHandling.NotHandled;
-		}
+		// public EnumHandling OnBeforeActiveSlotChanged(EntityAgent entity, ActiveSlotChangeEventArgs ev)
+		// {
+		// 	// If the player is carrying something in their hands,
+		// 	// prevent them from changing their active hotbar slot.
+		// 	return (entity.GetCarried(CarrySlot.Hands) != null)
+		// 		? EnumHandling.PreventDefault
+		// 		: EnumHandling.NotHandled;
+		// }
 		
 		
 		public static void OnPickUpMessage(IPlayer player, PickUpMessage message)
