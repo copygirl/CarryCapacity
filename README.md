@@ -26,22 +26,22 @@ your file explorer. Simply copy the `.zip` file you downloaded into here
 The only control in this mod is **sneaking** and **holding right click**.  
 If you're doing things right, you will see a circle that fills up over time.
 
-- While empty-handed, you can pick up blocks.
-- With something in-hand, place it down on the side of a **solid block**.
+- While empty-handed, you can pick up supported blocks.
+- With something in-hand, place it down on a **solid side** of a block.
 - Or put what you're carrying on your back by instead aiming in the air.
 - Grab what's on your back into your hands again while holding nothing.
 
-Carrying something in-hand prevents you using items and sprinting, as well as
-generally slowing you down. When on your back, the slowdown is less dramatic.
+Carrying something in-hand prevents you from using items and sprinting, as well
+as slows you down in general. When on your back, the slowdown is less dramatic.
 The exact amount depends on the type of block, though. Additionally, placing
 takes a little less time (-25%) than picking up, and interacting with your
 back is quite a bit slower (+50%).
 
 For the curious, the values in the following table show example walk speed
-modifiers and time to interact for the some blocks that you can carry around.
+modifiers and time to interact for some blocks that you can carry around.
 
-| Block | Speed in hands / on back | Time to pickup / place / switch |
-| ----- |:------------------------:|:-------------------------------:|
+| Block | Walk speed (hands / back) | Time to pickup / place / switch |
+| ----- |:-------------------------:|:-------------------------------:|
 | Chest (heavy)  | 60% /  85% | 0.8 / 0.6 / 1.2 seconds |
 | Basket (light) | 80% / 100% | 0.4 / 0.3 / 0.6 seconds |
 
