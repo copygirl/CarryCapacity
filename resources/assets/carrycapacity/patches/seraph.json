@@ -24,7 +24,7 @@
         "UpperFootR": { "rotationX": 0.0, "rotationY": 0.0, "rotationZ": 12.0 },
         "UpperFootL": { "rotationX": 0.0, "rotationY": 0.0, "rotationZ": 12.0 },
         "FrontShirtTile": { "rotationX": 0.0, "rotationY": 0.0, "rotationZ": 10.0 },
-        "BackShirtTile":  { "rotationX": 0.0, "rotationY": 0.0, "rotationZ": 12.0 }
+        "BackShirtTile":  { "rotationX": 0.0, "rotationY": 0.0, "rotationZ": 12.0 },
       }
     } ]
   } },
@@ -55,22 +55,28 @@
     "keyframes": [ {
       "frame": 0,
       "elements": {
-        "UpperArmR":  { "offsetX": 0.0, "offsetY": -0.4, "offsetZ":  0.4, "rotationX":   6.0, "rotationY":  0.0, "rotationZ":  -8.0 },
-        "LowerArmR":  { "offsetX": 0.4, "offsetY":  0.6, "offsetZ": -0.0, "rotationX": -12.0, "rotationY":  8.0, "rotationZ": -60.0 },
-        "UpperArmL":  { "offsetX": 0.0, "offsetY": -0.4, "offsetZ": -0.4, "rotationX":  -6.0, "rotationY":  0.0, "rotationZ":  -8.0 },
-        "LowerArmL":  { "offsetX": 0.4, "offsetY":  0.6, "offsetZ":  0.0, "rotationX":  12.0, "rotationY": -8.0, "rotationZ": -60.0 },
+        "UpperArmR": { "offsetX": 0.0, "offsetY": -0.4, "offsetZ":  0.4, "rotationX":   6.0, "rotationY":  0.0, "rotationZ":  -8.0 },
+        "LowerArmR": { "offsetX": 0.4, "offsetY":  0.6, "offsetZ": -0.0, "rotationX": -12.0, "rotationY":  8.0, "rotationZ": -60.0 },
+        "UpperArmL": { "offsetX": 0.0, "offsetY": -0.4, "offsetZ": -0.4, "rotationX":  -6.0, "rotationY":  0.0, "rotationZ":  -8.0 },
+        "LowerArmL": { "offsetX": 0.4, "offsetY":  0.6, "offsetZ":  0.0, "rotationX":  12.0, "rotationY": -8.0, "rotationZ": -60.0 },
       }
     } ]
   } },
   { file: "game:entities/humanoid/player", op: "add", path: "/client/animations/-", value: {
     "code": "carrycapacity:holdlight",
     "animation": "carrycapacity:holdlight",
-    "blendMode": "AddAverage",
+    "blendMode": "Add",
     "elementWeight": {
       "UpperArmR": 12,
       "LowerArmR": 12,
       "UpperArmL": 12,
       "LowerArmL": 12,
+    },
+    "elementBlendMode": {
+      "UpperArmR": "AddAverage",
+      "LowerArmR": "AddAverage",
+      "UpperArmL": "AddAverage",
+      "LowerArmL": "AddAverage",
     }
   } },
 ]
