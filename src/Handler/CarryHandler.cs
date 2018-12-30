@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using CarryCapacity.Network;
+using CarryCapacity.Utility;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Vintagestory.API.Common.Entities;
@@ -262,7 +263,7 @@ namespace CarryCapacity.Handler
 		public static bool CanInteract(EntityAgent entity)
 		{
 			var isSneaking    = entity.Controls.Sneak;
-			var isEmptyHanded = entity.RightHandItemSlot.Empty;
+			var isEmptyHanded = entity.RightHandItemSlot.Empty && entity.LeftHandItemSlot.Empty;
 			return (isSneaking && isEmptyHanded);
 		}
 		

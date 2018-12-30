@@ -1,6 +1,7 @@
 ﻿using CarryCapacity.Client;
 using CarryCapacity.Handler;
 using CarryCapacity.Network;
+using CarryCapacity.Utility;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Vintagestory.API.Server;

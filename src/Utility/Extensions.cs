@@ -3,7 +3,7 @@ using System.Linq;
 using Vintagestory.API.Common;
 using Vintagestory.API.Datastructures;
 
-namespace CarryCapacity
+namespace CarryCapacity.Utility
 {
 	public static class Extensions
 	{

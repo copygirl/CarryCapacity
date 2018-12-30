@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using CarryCapacity.Utility;
 using Vintagestory.API.Common;
 using Vintagestory.API.Common.Entities;
 using Vintagestory.API.Datastructures;
@@ -84,13 +85,16 @@ namespace CarryCapacity
 			var behavior     = stack.Block.GetBehaviorOrDefault(BlockBehaviorCarryable.DEFAULT);
 			var slotSettings = behavior.Slots[slot];
 			
+			if (slotSettings?.Animation != null)
+				entity.StartAnimation(slotSettings.Animation);
+			
 			if (entity is EntityAgent agent) {
 				var speed = slotSettings?.WalkSpeedModifier ?? 1.0F;
 				if (speed != 1.0F) agent.SetWalkSpeedModifier($"{ CarrySystem.MOD_ID }:{ slot }", speed, false);
+				
+				if (slot == CarrySlot.Hands) LockedItemSlot.Lock(agent.RightHandItemSlot);
+				if (slot != CarrySlot.Back ) LockedItemSlot.Lock(agent.LeftHandItemSlot);
 			}
-			
-			if (slotSettings?.Animation != null)
-				entity.StartAnimation(slotSettings.Animation);
 		}
 		
 		/// <summary> Stores this <see cref="CarriedBlock"/> as the
@@ -106,11 +110,15 @@ namespace CarryCapacity
 		{
 			if (entity == null) throw new ArgumentNullException(nameof(entity));
 			
-			if (entity is EntityAgent agent)
-				agent.RemoveWalkSpeedModifier($"{ CarrySystem.MOD_ID }:{ slot }");
-			
 			var animation = entity.GetCarried(slot)?.Behavior?.Slots?[slot]?.Animation;
 			if (animation != null) entity.StopAnimation(animation);
+			
+			if (entity is EntityAgent agent) {
+				agent.RemoveWalkSpeedModifier($"{ CarrySystem.MOD_ID }:{ slot }");
+				
+				if (slot == CarrySlot.Hands) LockedItemSlot.Restore(agent.RightHandItemSlot);
+				if (slot != CarrySlot.Back ) LockedItemSlot.Restore(agent.LeftHandItemSlot);
+			}
 			
 			entity.WatchedAttributes.Remove(ATTRIBUTE_ID, slot.ToString());
 			((SyncedTreeAttribute)entity.WatchedAttributes).MarkPathDirty(ATTRIBUTE_ID);
