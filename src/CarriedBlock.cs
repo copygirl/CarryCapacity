@@ -310,21 +310,23 @@ namespace CarryCapacity
 		}
 		
 		/// <summary>
-		///   Attempts to swap the <see cref="CarriedBlock"/> currently carried
-		///   in the entity's Hands slot with the one that's in its Back slot.
+		///   Attempts to swap the <see cref="CarriedBlock"/>s currently carried in the
+		///   entity's <paramref name="first"/> and <paramref name="second"/> slots.
 		/// </summary>
 		/// <example cref="ArgumentNullException"> Thrown if entity is null. </exception>
-		public static bool SwapCarriedHandsWithBack(this Entity entity)
+		public static bool Swap(this Entity entity, CarrySlot first, CarrySlot second)
 		{
-			var carriedHands = CarriedBlock.Get(entity, CarrySlot.Hands);
-			var carriedBack  = CarriedBlock.Get(entity, CarrySlot.Back);
-			if ((carriedHands == null) && (carriedBack == null)) return false;
+			if (first == second) throw new ArgumentException("Slots can't be the same");
 			
-			CarriedBlock.Remove(entity, CarrySlot.Hands);
-			CarriedBlock.Remove(entity, CarrySlot.Back);
+			var carriedFirst  = CarriedBlock.Get(entity, first);
+			var carriedSecond = CarriedBlock.Get(entity, second);
+			if ((carriedFirst == null) && (carriedSecond == null)) return false;
 			
-			if (carriedHands != null) carriedHands.Set(entity, CarrySlot.Back);
-			if (carriedBack != null) carriedBack.Set(entity, CarrySlot.Hands);
+			CarriedBlock.Remove(entity, first);
+			CarriedBlock.Remove(entity, second);
+			
+			if (carriedFirst != null) carriedFirst.Set(entity, second);
+			if (carriedSecond != null) carriedSecond.Set(entity, first);
 			
 			return true;
 		}

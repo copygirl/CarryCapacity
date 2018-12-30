@@ -5,6 +5,12 @@
     "posY": 0.0, "rotationY": 180.0,
     "posZ": 3.0, "rotationZ":   0.0,
   } },
+  { file: "game:shapes/entity/humanoid/seraph", op: "add", path: "/elements/0/children/0/children/1/attachmentpoints", value: [ {
+    "code": "carrycapacity:ShoulderL",
+    "posX": 1.5, "rotationX": -90.0,
+    "posY": 4.0, "rotationY":   0.0,
+    "posZ": 0.0, "rotationZ":   0.0,
+  } ] },
   
   { file: "game:shapes/entity/humanoid/seraph", op: "add", path: "/animations/-", value: {
     "name": "Holding Heavy Block (CarryCapacity)",
@@ -75,6 +81,34 @@
     "elementBlendMode": {
       "UpperArmR": "AddAverage",
       "LowerArmR": "AddAverage",
+      "UpperArmL": "AddAverage",
+      "LowerArmL": "AddAverage",
+    }
+  } },
+  
+  { file: "game:shapes/entity/humanoid/seraph", op: "add", path: "/animations/-", value: {
+    "name": "Carry on Shoulder (CarryCapacity)",
+    "code": "carrycapacity:shoulder",
+    "quantityframes": 30,
+    "onActivityStopped": "Rewind",
+    "onAnimationEnd": "Repeat",
+    "keyframes": [ {
+      "frame": 0,
+      "elements": {
+        "UpperArmL": { "offsetX": -1.0, "offsetY": -0.6, "offsetZ": 0.0, "rotationX": 90.0, "rotationY": 5.0, "rotationZ": -180.0 },
+        "LowerArmL": { "offsetX":  0.0, "offsetY":  0.8, "offsetZ": 0.0, "rotationX": 90.0, "rotationY": 0.0, "rotationZ":    5.0 },
+      }
+    } ]
+  } },
+  { file: "game:entities/humanoid/player", op: "add", path: "/client/animations/-", value: {
+    "code": "carrycapacity:shoulder",
+    "animation": "carrycapacity:shoulder",
+    "blendMode": "Add",
+    "elementWeight": {
+      "UpperArmL": 12,
+      "LowerArmL": 12,
+    },
+    "elementBlendMode": {
       "UpperArmL": "AddAverage",
       "LowerArmL": "AddAverage",
     }

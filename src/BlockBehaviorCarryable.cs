@@ -25,12 +25,17 @@ namespace CarryCapacity
 			};
 		
 		public static readonly IReadOnlyDictionary<CarrySlot, float> DEFAULT_WALKSPEED
-			= new Dictionary<CarrySlot, float> {
-				{ CarrySlot.Hands, 0.60F }, // Default slowdown while carrying in hands: 40%
-				{ CarrySlot.Back , 0.85F }, // Default slowdown while carrying on back:  15%
+			= new Dictionary<CarrySlot, float> { // Default slowdown while carrying ..
+				{ CarrySlot.Hands    , 0.60F },    // .. in hands:    40%
+				{ CarrySlot.Back     , 0.85F },    // .. on back:     15%
+				{ CarrySlot.Shoulder , 0.70F },    // .. on shoulder: 30%
 			};
 		
-		public static string DEFAULT_HANDS_ANIMATION = $"{ CarrySystem.MOD_ID }:holdheavy";
+		public static readonly IReadOnlyDictionary<CarrySlot, string> DEFAULT_ANIMATION
+			= new Dictionary<CarrySlot, string> {
+				{ CarrySlot.Hands    , $"{ CarrySystem.MOD_ID }:holdheavy" },
+				{ CarrySlot.Shoulder , $"{ CarrySystem.MOD_ID }:shoulder"  },
+			};
 		
 		
 		public float InteractDelay { get; private set; } = 0.8F;
@@ -48,7 +53,7 @@ namespace CarryCapacity
 		{
 			if (TryGetFloat(properties, "interactDelay", out var d)) InteractDelay = d;
 			DefaultTransform = GetTransform(properties, DEFAULT_BLOCK_TRANSFORM);
-			Slots.Initialize(properties["slots"]);
+			Slots.Initialize(properties["slots"], DefaultTransform);
 		}
 		
 		
@@ -95,27 +100,32 @@ namespace CarryCapacity
 			public SlotSettings this[CarrySlot slot]
 				=> _dict.TryGetValue(slot, out var settings) ? settings : null;
 			
-			public void Initialize(JsonObject properties)
+			public void Initialize(JsonObject properties, ModelTransform defaultTansform)
 			{
 				_dict.Clear();
-				_dict.Add(CarrySlot.Hands, new SlotSettings { Animation = DEFAULT_HANDS_ANIMATION });
-				
-				if (properties?.Exists != true) return;
-				foreach (var slot in Enum.GetValues(typeof(CarrySlot)).Cast<CarrySlot>()) {
-					var slotProperties = properties[slot.ToString()];
-					if (slotProperties == null) continue;
+				if (properties?.Exists != true) {
 					
-					if (!_dict.TryGetValue(slot, out var settings))
-						_dict.Add(slot, settings = new SlotSettings());
+					if (!DEFAULT_ANIMATION.TryGetValue(CarrySlot.Hands, out var anim)) anim = null;
+					_dict.Add(CarrySlot.Hands, new SlotSettings { Animation = anim });
 					
-					if (slotProperties.KeyExists("translation") || slotProperties.KeyExists("rotation") ||
-					    slotProperties.KeyExists("origin") || slotProperties.KeyExists("scale"))
-						settings.Transform = GetTransform(slotProperties, DEFAULT_BLOCK_TRANSFORM);
+				} else {
 					
-					settings.Animation = slotProperties["animation"].AsString(settings.Animation);
+					foreach (var slot in Enum.GetValues(typeof(CarrySlot)).Cast<CarrySlot>()) {
+						var slotProperties = properties[slot.ToString()];
+						if (slotProperties?.Exists != true) continue;
+						
+						if (!_dict.TryGetValue(slot, out var settings)) {
+							if (!DEFAULT_ANIMATION.TryGetValue(slot, out var anim)) anim = null;
+							_dict.Add(slot, settings = new SlotSettings { Animation = anim });
+						}
+						
+						settings.Transform = GetTransform(slotProperties, defaultTansform);
+						settings.Animation = slotProperties["animation"].AsString(settings.Animation);
+						
+						if (!DEFAULT_WALKSPEED.TryGetValue(slot, out var speed)) speed = 1.0F;
+						settings.WalkSpeedModifier = slotProperties["walkSpeedModifier"].AsFloat(speed);
+					}
 					
-					if (!BlockBehaviorCarryable.DEFAULT_WALKSPEED.TryGetValue(slot, out var speed)) speed = 1.0F;
-					settings.WalkSpeedModifier = slotProperties["walkSpeedModifier"].AsFloat(speed);
 				}
 			}
 		}

@@ -5,5 +5,6 @@ namespace CarryCapacity
 	{
 		Hands,
 		Back,
+		Shoulder,
 	}
 }

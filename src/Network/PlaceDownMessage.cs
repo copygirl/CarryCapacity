@@ -7,6 +7,8 @@ namespace CarryCapacity.Network
 	[ProtoContract(ImplicitFields = ImplicitFields.AllFields)]
 	public class PlaceDownMessage
 	{
+		public CarrySlot Slot { get; }
+		
 		private readonly BlockPos _pos;
 		private readonly byte _face;
 		private readonly float _x, _y, _z;
@@ -21,8 +23,9 @@ namespace CarryCapacity.Network
 		
 		private PlaceDownMessage() {  }
 		
-		public PlaceDownMessage(BlockSelection selection)
+		public PlaceDownMessage(CarrySlot slot, BlockSelection selection)
 		{
+			Slot  = slot;
 			_pos  = selection.Position;
 			_face = (byte)selection.Face.Index;
 			_x = (float)selection.HitPosition.X;
