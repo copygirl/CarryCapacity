@@ -189,8 +189,8 @@ namespace CarryCapacity
 			}
 			
 			RestoreBlockEntityData(world, selection.Position);
-			PlaySound(selection.Position, entity);
 			if (entity != null) Remove(entity, Slot);
+			PlaySound(selection.Position, world, (entity as EntityPlayer));
 			
 			return true;
 		}
@@ -220,7 +220,8 @@ namespace CarryCapacity
 		}
 		
 		
-		internal void PlaySound(BlockPos pos, Entity entity = null)
+		internal void PlaySound(BlockPos pos, IWorldAccessor world,
+		                        EntityPlayer entityPlayer = null)
 		{
 			const float SOUND_RANGE  = 16.0F;
 			const float SOUND_VOLUME = 0.8F;
@@ -228,12 +229,10 @@ namespace CarryCapacity
 			// TODO: In 1.7.0, Block.Sounds should not be null anymore.
 			if (Block.Sounds?.Place == null) return;
 			
-			var player = (entity.World.Side == EnumAppSide.Server)
-					&& (entity is EntityPlayer entityPlayer)
-				? entity.World.PlayerByUid(entityPlayer.PlayerUID)
-				: null;
+			var player = (entityPlayer != null) && (world.Side == EnumAppSide.Server)
+				? world.PlayerByUid(entityPlayer.PlayerUID) : null;
 			
-			entity.World.PlaySoundAt(Block.Sounds.Place,
+			world.PlaySoundAt(Block.Sounds.Place,
 				pos.X + 0.5, pos.Y + 0.25, pos.Z + 0.5, player,
 				range: SOUND_RANGE, volume: SOUND_VOLUME);
 		}
@@ -277,7 +276,7 @@ namespace CarryCapacity
 			if (carried == null) return false;
 			
 			carried.Set(entity, slot);
-			carried.PlaySound(pos, entity);
+			carried.PlaySound(pos, entity.World, (entity as EntityPlayer));
 			return true;
 		}
 		
@@ -314,7 +313,10 @@ namespace CarryCapacity
 				HitPosition = new Vec3d(0.5, 0.5, 0.5),
 			};
 			
-			return carried.PlaceDown(entity.World, selection, entity);
+			if (!carried.PlaceDown(entity.World, selection, null)) return false;
+			
+			CarriedBlock.Remove(entity, slot);
+			return true;
 		}
 		
 		/// <summary>
