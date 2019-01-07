@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using Vintagestory.API.Common;
+using Vintagestory.API.Common.Entities;
 using Vintagestory.API.Datastructures;
 
 namespace CarryCapacity.Utility
@@ -8,9 +9,15 @@ namespace CarryCapacity.Utility
 	public static class Extensions
 	{
 		public static void Register<T>(this ICoreAPI api)
-			where T : BlockBehavior
-				=> api.RegisterBlockBehaviorClass(
-					(string)typeof(T).GetProperty("NAME").GetValue(null), typeof(T));
+		{
+			var name = (string)typeof(T).GetProperty("NAME").GetValue(null);
+			if (typeof(BlockBehavior).IsAssignableFrom(typeof(T)))
+				api.RegisterBlockBehaviorClass(name, typeof(T));
+			else if (typeof(EntityBehavior).IsAssignableFrom(typeof(T)))
+				api.RegisterEntityBehaviorClass(name, typeof(T));
+			else throw new ArgumentException("T is not a block or entity behavior", nameof(T));
+		}
+		
 		
 		public static bool HasBehavior<T>(this Block block)
 			where T : BlockBehavior

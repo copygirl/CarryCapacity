@@ -60,6 +60,8 @@ namespace CarryCapacity
 		
 		public override void StartServerSide(ICoreServerAPI api)
 		{
+			api.Register<EntityBehaviorDropCarriedOnDamage>();
+			
 			ServerAPI     = api;
 			ServerChannel = api.Network.RegisterChannel(MOD_ID)
 				.RegisterMessageType(typeof(PickUpMessage))
