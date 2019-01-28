@@ -1,7 +1,7 @@
 using System;
 using ProtoBuf;
 
-namespace CarryCapacity.Network
+namespace CarryCapacity.Common.Network
 {
 	[ProtoContract(ImplicitFields = ImplicitFields.AllFields)]
 	public class SwapSlotsMessage

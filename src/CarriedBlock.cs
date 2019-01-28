@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using CarryCapacity.Common;
+using CarryCapacity.Common.Network;
 using CarryCapacity.Utility;
 using Vintagestory.API.Common;
 using Vintagestory.API.Common.Entities;

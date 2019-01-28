@@ -1,7 +1,7 @@
 using Vintagestory.API.Common;
 using Vintagestory.API.Common.Entities;
 
-namespace CarryCapacity
+namespace CarryCapacity.Server
 {
 	public class EntityBehaviorDropCarriedOnDamage : EntityBehavior
 	{

@@ -2,7 +2,7 @@ using Vintagestory.API.Common;
 using Vintagestory.API.Common.Entities;
 using Vintagestory.API.Server;
 
-namespace CarryCapacity.Handler
+namespace CarryCapacity.Common
 {
   /// <summary> Handles upgrading old attributes and other
   ///           data to newer versions of CarryCapacity. </summary>

@@ -1,7 +1,7 @@
 using Vintagestory.API.Common;
 using Vintagestory.API.Server;
 
-namespace CarryCapacity.Handler
+namespace CarryCapacity.Common
 {
   public class DeathHandler
 	{

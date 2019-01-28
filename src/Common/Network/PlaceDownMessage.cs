@@ -2,7 +2,7 @@ using ProtoBuf;
 using Vintagestory.API.Common;
 using Vintagestory.API.MathTools;
 
-namespace CarryCapacity.Network
+namespace CarryCapacity.Common.Network
 {
 	[ProtoContract(ImplicitFields = ImplicitFields.AllFields)]
 	public class PlaceDownMessage

@@ -5,7 +5,7 @@ using Vintagestory.API;
 using Vintagestory.API.Common;
 using Vintagestory.API.MathTools;
 
-namespace CarryCapacity
+namespace CarryCapacity.Common
 {
 	/// <summary> Block behavior which, when added to a block, will allow
 	///           said block to be picked up by players and carried around. </summary>

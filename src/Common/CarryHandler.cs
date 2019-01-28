@@ -1,13 +1,13 @@
 using System;
 using System.Linq;
-using CarryCapacity.Network;
+using CarryCapacity.Common.Network;
 using CarryCapacity.Utility;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Vintagestory.API.Common.Entities;
 using Vintagestory.API.MathTools;
 
-namespace CarryCapacity.Handler
+namespace CarryCapacity.Common
 {
 	/// <summary>
 	///   Takes care of core CarryCapacity handling, such as listening to input events,
@@ -23,16 +23,16 @@ namespace CarryCapacity.Handler
 		private BlockPos _selectedBlock = null;
 		private float _timeHeld         = 0.0F;
 		
-		private CarrySystem Mod { get; }
+		private CarrySystem System { get; }
 		
-		public CarryHandler(CarrySystem mod)
-			=> Mod = mod;
+		public CarryHandler(CarrySystem system)
+			=> System = system;
 		
 		public void InitClient()
 		{
-			Mod.ClientAPI.Event.MouseDown += OnMouseDown;
-			Mod.ClientAPI.Event.MouseUp   += OnMouseUp;
-			Mod.ClientAPI.Event.RegisterGameTickListener(OnGameTick, 0);
+			System.ClientAPI.Event.MouseDown += OnMouseDown;
+			System.ClientAPI.Event.MouseUp   += OnMouseUp;
+			System.ClientAPI.Event.RegisterGameTickListener(OnGameTick, 0);
 			
 			// FIXME: Disabled this portion of the code, since the updated event
 			//        isn't available because my merge request wasn't accepted yet.
@@ -42,12 +42,12 @@ namespace CarryCapacity.Handler
 		
 		public void InitServer()
 		{
-			Mod.ServerChannel
+			System.ServerChannel
 				.SetMessageHandler<PickUpMessage>(OnPickUpMessage)
 				.SetMessageHandler<PlaceDownMessage>(OnPlaceDownMessage)
 				.SetMessageHandler<SwapSlotsMessage>(OnSwapSlotsMessage);
 			
-			Mod.ServerAPI.Event.OnEntitySpawn += OnEntitySpawn;
+			System.ServerAPI.Event.OnEntitySpawn += OnEntitySpawn;
 			
 			// Mod.ServerAPI.Event.BeforeActiveSlotChanged +=
 			// 	(player, ev) => OnBeforeActiveSlotChanged(player.Entity, ev);
@@ -73,7 +73,7 @@ namespace CarryCapacity.Handler
 		
 		public void OnMouseDown(MouseEvent ev)
 		{
-			var world     = Mod.ClientAPI.World;
+			var world     = System.ClientAPI.World;
 			var player    = world.Player;
 			var selection = player.CurrentBlockSelection;
 			var block     = (selection != null) ? world.BlockAccessor.GetBlock(selection.Position) : null;
@@ -121,7 +121,7 @@ namespace CarryCapacity.Handler
 		public void OnGameTick(float deltaTime)
 		{
 			if (_action == CurrentAction.None) return;
-			var world  = Mod.ClientAPI.World;
+			var world  = System.ClientAPI.World;
 			var player = world.Player;
 			
 			// TODO: Don't run any of this while in a GUI.
@@ -188,21 +188,21 @@ namespace CarryCapacity.Handler
 			
 			_timeHeld += deltaTime;
 			var progress = (_timeHeld / requiredTime);
-			Mod.HudOverlayRenderer.CircleProgress = progress;
+			System.HudOverlayRenderer.CircleProgress = progress;
 			if (progress <= 1.0F) return;
 			
 			switch (_action) {
 				case CurrentAction.PickUp:
 					if (player.Entity.Carry(selection.Position, _targetSlot.Value))
-						Mod.ClientChannel.SendPacket(new PickUpMessage(selection.Position, _targetSlot.Value));
+						System.ClientChannel.SendPacket(new PickUpMessage(selection.Position, _targetSlot.Value));
 					break;
 				case CurrentAction.PlaceDown:
 					if (PlaceDown(player, carriedTarget, selection))
-						Mod.ClientChannel.SendPacket(new PlaceDownMessage(_targetSlot.Value, selection));
+						System.ClientChannel.SendPacket(new PlaceDownMessage(_targetSlot.Value, selection));
 					break;
 				case CurrentAction.SwapBack:
 					if (player.Entity.Swap(_targetSlot.Value, CarrySlot.Back))
-						Mod.ClientChannel.SendPacket(new SwapSlotsMessage(CarrySlot.Back, _targetSlot.Value));
+						System.ClientChannel.SendPacket(new SwapSlotsMessage(CarrySlot.Back, _targetSlot.Value));
 					break;
 			}
 			
@@ -214,7 +214,7 @@ namespace CarryCapacity.Handler
 			_action     = CurrentAction.None;
 			_targetSlot = null;
 			_timeHeld   = 0.0F;
-			Mod.HudOverlayRenderer.CircleVisible = false;
+			System.HudOverlayRenderer.CircleVisible = false;
 		}
 		
 		
