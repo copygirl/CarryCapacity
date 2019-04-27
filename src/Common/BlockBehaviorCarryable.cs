@@ -59,12 +59,12 @@ namespace CarryCapacity.Common
 		
 		private static bool TryGetFloat(JsonObject json, string key, out float result)
 		{
-				result = json[key].AsFloat(float.NaN);
-				return !float.IsNaN(result);
+			result = json[key].AsFloat(float.NaN);
+			return !float.IsNaN(result);
 		}
 		private static bool TryGetVec3f(JsonObject json, string key, out Vec3f result)
 		{
-			var floats  = json[key].AsFloatArray();
+			var floats  = json[key].AsArray<float>();
 			var success = (floats?.Length == 3);
 			result = success ? new Vec3f(floats) : null;
 			return success;

@@ -20,7 +20,7 @@ namespace CarryCapacity
 	{
 		public static string MOD_ID = "carrycapacity";
 		
-		public override bool AllowRuntimeReload() => true;
+		public override bool AllowRuntimeReload => true;
 		
 		// Client
 		public ICoreClientAPI ClientAPI { get; private set; }

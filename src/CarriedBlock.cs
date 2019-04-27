@@ -184,7 +184,8 @@ namespace CarryCapacity
 			
 			if (entity is EntityPlayer playerEntity) {
 				var player = world.PlayerByUid(playerEntity.PlayerUID);
-				if (!Block.TryPlaceBlock(world, player, ItemStack, selection)) return false;
+				var failureCode = "__ignore__";
+				if (!Block.TryPlaceBlock(world, player, ItemStack, selection, ref failureCode)) return false;
 			} else {
 				world.BlockAccessor.SetBlock((ushort)Block.Id, selection.Position);
 				// TODO: Handle type attribute.

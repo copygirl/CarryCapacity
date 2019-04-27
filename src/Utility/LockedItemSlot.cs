@@ -43,12 +43,12 @@ namespace CarryCapacity.Utility
 		
 		// These should be the only methods we have to override.
 		
-		public override bool CanHold(IItemSlot sourceSlot) => false;
+		public override bool CanHold(ItemSlot sourceSlot) => false;
 		public override bool CanTake() => false;
 		
 		// Unfortunately, only some of ItemSlot's method make use of them.
 		
-		public override bool CanTakeFrom(IItemSlot sourceSlot) => false;
+		public override bool CanTakeFrom(ItemSlot sourceSlot) => false;
 		public override ItemStack TakeOutWhole() => null;
 		public override ItemStack TakeOut(int quantity) => null;
 		protected override void ActivateSlotLeftClick(ItemSlot sourceSlot, ref ItemStackMoveOperation op) {  }
