@@ -7,7 +7,7 @@ using Vintagestory.GameContent;
 
 namespace CarryCapacity.Client
 {
-  public class EntityCarryRenderer : IRenderer
+	public class EntityCarryRenderer : IRenderer
 	{
 		private static readonly Dictionary<CarrySlot, SlotRenderSettings> _renderSettings
 			= new Dictionary<CarrySlot, SlotRenderSettings> {
@@ -25,7 +25,8 @@ namespace CarryCapacity.Client
 		}
 		
 		
-		private ICoreClientAPI API { get; }
+		private ICoreClientAPI API { get; set; }
+		private AnimationFixer AnimationFixer { get; set; }
 		
 		public EntityCarryRenderer(ICoreClientAPI api)
 		{
@@ -33,6 +34,7 @@ namespace CarryCapacity.Client
 			API.Event.RegisterRenderer(this, EnumRenderStage.Opaque);
 			API.Event.RegisterRenderer(this, EnumRenderStage.ShadowFar);
 			API.Event.RegisterRenderer(this, EnumRenderStage.ShadowNear);
+			AnimationFixer = new AnimationFixer();
 		}
 		
 		public void Dispose()
@@ -40,6 +42,8 @@ namespace CarryCapacity.Client
 			API.Event.UnregisterRenderer(this, EnumRenderStage.Opaque);
 			API.Event.UnregisterRenderer(this, EnumRenderStage.ShadowFar);
 			API.Event.UnregisterRenderer(this, EnumRenderStage.ShadowNear);
+			API = null;
+			AnimationFixer = null;
 		}
 		
 		
@@ -65,23 +69,26 @@ namespace CarryCapacity.Client
 			foreach (var player in API.World.AllPlayers) {
 				// Leaving the additional, more detailed exceptions in just in case other things end up breaking.
 				if (player == null) throw new Exception("null player in API.World.AllPlayers!");
+				if (API.World == null) throw new Exception("API.World is null!");
+				if (API.World.Player == null) throw new Exception("API.World.Player is null!");
+				
+				var entity        = player.Entity;
+				var isLocalPlayer = (player == API.World.Player);
 				
 				// Player entity may be null in some circumstances.
 				// Maybe the other player is too far away, so there's
 				// no entity spawned for them on the client's side?
-				if (player.Entity == null) continue;
+				if (entity == null) continue;
 				
-				if (API.World == null) throw new Exception("API.World is null!");
-				if (API.World.Player == null) throw new Exception("API.World.Player is null!");
+				// Fix up animations that should/shouldn't be playing.
+				if (isLocalPlayer) AnimationFixer.Update(entity);
 				
-				var entity = player.Entity;
 				var allCarried = entity.GetCarried().ToList();
 				if (allCarried.Count == 0) continue; // Entity is not carrying anything.
 				
 				var renderApi     = API.Render;
 				var isShadowPass  = (stage != EnumRenderStage.Opaque);
-				var isFirstPerson = (player == API.World.Player)
-				                 && (API.World.Player.CameraMode == EnumCameraMode.FirstPerson);
+				var isFirstPerson = isLocalPlayer && (API.World.Player.CameraMode == EnumCameraMode.FirstPerson);
 				
 				var renderer = (EntityShapeRenderer)entity.Properties.Client.Renderer;
 				if (renderer == null) continue; // Apparently this can end up being null?
