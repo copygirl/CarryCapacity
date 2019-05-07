@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using CarryCapacity.Common;
-using CarryCapacity.Common.Network;
 using CarryCapacity.Utility;
 using Vintagestory.API.Common;
 using Vintagestory.API.Common.Entities;
@@ -317,7 +316,7 @@ namespace CarryCapacity
 				     .Where(c => (c != null)));
 			if (remaining.Count == 0) return;
 			
-			bool DropCarried(BlockPos pos, CarriedBlock block)
+			bool Drop(BlockPos pos, CarriedBlock block)
 			{
 				if (!block.PlaceDown(entity.World, new BlockSelection { Position = pos }, null)) return false;
 				CarriedBlock.Remove(entity, block.Slot);
@@ -343,13 +342,13 @@ namespace CarryCapacity
 					if (sign == 0) {
 						sign = ((placeable != null) ? -1 : 1);
 					} else if (sign > 0) {
-						if ((placeable != null) && DropCarried(pos, placeable))
+						if ((placeable != null) && Drop(pos, placeable))
 							remaining.Remove(placeable);
 					} else if ((placeable == null)) {
 						var above = pos.UpCopy();
 						testBlock = accessor.GetBlock(above);
 						placeable = remaining.FirstOrDefault(c => testBlock.IsReplacableBy(c.Block));
-						if ((placeable != null) && DropCarried(above, placeable))
+						if ((placeable != null) && Drop(above, placeable))
 							remaining.Remove(placeable);
 					}
 					pos.Add(0, sign, 0);

@@ -1,5 +1,3 @@
-using System;
-using System.Linq;
 using CarryCapacity.Common.Network;
 using CarryCapacity.Utility;
 using Vintagestory.API.Client;
