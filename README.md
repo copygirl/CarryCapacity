@@ -47,12 +47,12 @@ modifiers and time to interact for some blocks that you can carry around.
 
 ## Modding
 
-The block behavior `Carryable` is [retroactively added](patch) to Vanilla
+The block behavior `Carryable` is [retroactively added][patch] to Vanilla
 blocks. It is also possible to add it to additional ones. Simply add it to the
 behavior list like in the following example, or use the patching system to
 modify existing blocks like I do.
 
-[patch]: https://github.com/copygirl/CarryCapacity/blob/master/resources/assets/carrycapacity/patches/carryable.json
+[patch]: ./resources/assets/carrycapacity/patches/carryable.json
 
 ```json
 behaviors: [
