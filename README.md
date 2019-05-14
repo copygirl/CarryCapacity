@@ -31,8 +31,8 @@ If you're doing things right, you will see a circle that fills up over time.
 - Or put what you're carrying on your back by instead aiming in the air.
 - Grab what's on your back into your hands again while holding nothing.
 
-Carrying something in-hand prevents you from using items and sprinting, as well
-as slows you down in general. When on your back, the slowdown is less dramatic.
+Carrying something in-hand prevents you from using items and sprinting.
+Whether in your hands or on your back, you may be slowed down in general.
 The exact amount depends on the type of block, though. Additionally, placing
 takes a little less time (-25%) than picking up, and interacting with your
 back is quite a bit slower (+50%).
@@ -42,8 +42,8 @@ modifiers and time to interact for some blocks that you can carry around.
 
 | Block | Walk speed (hands / back) | Time to pickup / place / switch |
 | ----- |:-------------------------:|:-------------------------------:|
-| Chest (heavy)  | 60% /  85% | 0.8 / 0.6 / 1.2 seconds |
-| Basket (light) | 80% / 100% | 0.4 / 0.3 / 0.6 seconds |
+| Chest (heavy)  | 75% /  80% | 0.8 / 0.6 / 1.2 seconds |
+| Basket (light) | 85% / 100% | 0.4 / 0.3 / 0.6 seconds |
 
 ## Modding
 
@@ -69,7 +69,7 @@ behaviors: [
     slots: {
       "Hands": {
         animation: "carrycapacity:holdheavy",
-        walkSpeedModifier: 0.6,
+        walkSpeedModifier: 0.75,
         
         translation: [ 0, 0, 0 ],
         rotation: [ 0, 0, 0 ],

@@ -17,7 +17,7 @@
       slots: {
         "Hands": {
           animation: "carrycapacity:holdlight",
-          walkSpeedModifier: 0.8,
+          walkSpeedModifier: 0.85,
           rotation: [ 0, 90, 0 ],
         },
         "Back": {

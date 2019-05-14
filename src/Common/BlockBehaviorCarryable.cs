@@ -36,9 +36,9 @@ namespace CarryCapacity.Common
 		
 		public static readonly IReadOnlyDictionary<CarrySlot, float> DEFAULT_WALKSPEED
 			= new Dictionary<CarrySlot, float> { // Default slowdown while carrying ..
-				{ CarrySlot.Hands    , 0.60F },    // .. in hands:    40%
-				{ CarrySlot.Back     , 0.85F },    // .. on back:     15%
-				{ CarrySlot.Shoulder , 0.70F },    // .. on shoulder: 30%
+				{ CarrySlot.Hands    , 0.75F },    // .. in hands:    25%
+				{ CarrySlot.Back     , 0.80F },    // .. on back:     20%
+				{ CarrySlot.Shoulder , 0.85F },    // .. on shoulder: 15%
 			};
 		
 		public static readonly IReadOnlyDictionary<CarrySlot, string> DEFAULT_ANIMATION
