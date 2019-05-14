@@ -28,14 +28,11 @@ namespace CarryCapacity.Common
 		
 		public void InitClient()
 		{
-			System.ClientAPI.Event.MouseDown += OnMouseDown;
-			System.ClientAPI.Event.MouseUp   += OnMouseUp;
+			System.ClientAPI.Input.InWorldAction += OnEntityAction;
 			System.ClientAPI.Event.RegisterGameTickListener(OnGameTick, 0);
 			
-			// FIXME: Disabled this portion of the code, since the updated event
-			//        isn't available because my merge request wasn't accepted yet.
-			// Mod.ClientAPI.Event.BeforeActiveSlotChanged +=
-			// 	(ev) => OnBeforeActiveSlotChanged(Mod.ClientAPI.World.Player.Entity, ev);
+			System.ClientAPI.Event.BeforeActiveSlotChanged +=
+				(ev) => OnBeforeActiveSlotChanged(System.ClientAPI.World.Player.Entity, ev);
 		}
 		
 		public void InitServer()
@@ -45,18 +42,21 @@ namespace CarryCapacity.Common
 				.SetMessageHandler<PlaceDownMessage>(OnPlaceDownMessage)
 				.SetMessageHandler<SwapSlotsMessage>(OnSwapSlotsMessage);
 			
-			System.ServerAPI.Event.OnEntitySpawn += OnEntitySpawn;
+			System.ServerAPI.Event.OnEntitySpawn += OnServerEntitySpawn;
 			
-			// Mod.ServerAPI.Event.BeforeActiveSlotChanged +=
-			// 	(player, ev) => OnBeforeActiveSlotChanged(player.Entity, ev);
+			System.ServerAPI.Event.BeforeActiveSlotChanged +=
+				(player, ev) => OnBeforeActiveSlotChanged(player.Entity, ev);
 		}
 		
 		
-		public void OnEntitySpawn(Entity entity)
+		public void OnServerEntitySpawn(Entity entity)
 		{
 			// Set this again so walk speed modifiers and animations can be applied.
 			foreach (var carried in entity.GetCarried())
 				carried.Set(entity, carried.Slot);
+			
+			// if (entity is EntityPlayer player)
+			// 	player.Controls.OnAction += OnEntityAction;
 		}
 		
 		
@@ -69,8 +69,24 @@ namespace CarryCapacity.Common
 			return null;
 		}
 		
-		public void OnMouseDown(MouseEvent ev)
+		public void OnEntityAction(EnumEntityAction action, ref EnumHandling handled)
 		{
+			bool isInteract;
+			switch (action) {
+				// Right click (interact action) starts carry's pickup and place handling.
+				case EnumEntityAction.RightMouseDown:
+					isInteract = true; break;
+				// Other actions, which are prevented while holding something.
+				case EnumEntityAction.LeftMouseDown:
+				case EnumEntityAction.Sprint:
+					isInteract = false; break;
+				default: return;
+			}
+			
+			// If an action is currently ongoing, ignore the game's entity action.
+			if (_action != CurrentAction.None)
+				{ handled = EnumHandling.PreventDefault; return; }
+			
 			var world     = System.ClientAPI.World;
 			var player    = world.Player;
 			var selection = player.CurrentBlockSelection;
@@ -79,28 +95,29 @@ namespace CarryCapacity.Common
 			var carriedHands    = player.Entity.GetCarried(CarrySlot.Hands);
 			var carriedBack     = player.Entity.GetCarried(CarrySlot.Back);
 			var carriedShoulder = player.Entity.GetCarried(CarrySlot.Shoulder);
-			var carriedAny      = carriedHands ?? carriedShoulder;
+			var holdingAny      = carriedHands ?? carriedShoulder;
 			
-			// If something is being carried in-hand, make sure to prevent the default action.
-			if (carriedHands != null) ev.Handled = true;
-			// FIXME: This prevents interactions in the GUI. We need dedicated events for block/entity interactions.
+			// If something is being carried in-hand, prevent RMB, LMB and sprint.
+			// If still holding RMB after an action completed, prevent the default action as well.
+			if ((carriedHands != null) || (isInteract && (_timeHeld > 0.0F)))
+				handled = EnumHandling.PreventDefault;
 			
-			// Only continue if the right (interact) mouse button is held and player is sneaking with an empty hand.
-			if ((ev.Button != EnumMouseButton.Right) || !CanInteract(player.Entity)) return;
+			// Only continue if player is starting an interaction (right click) and sneaking with an empty hand.
+			if (!isInteract || (_timeHeld > 0.0F) || !CanInteract(player.Entity)) return;
 			
-			if (carriedAny != null) {
+			if (holdingAny != null) {
 				// If something's being carried in-hand or on shoulder and aiming at block, try to place it.
 				if (selection != null) {
 					// Make sure it's put on a solid top face of a block.
-					if (!CanPlace(world, selection, carriedAny)) return;
+					if (!CanPlace(world, selection, holdingAny)) return;
 					_action        = CurrentAction.PlaceDown;
-					_targetSlot    = carriedAny.Slot;
-					_selectedBlock = GetPlacedPosition(world, selection, carriedAny.Block);
+					_targetSlot    = holdingAny.Slot;
+					_selectedBlock = GetPlacedPosition(world, selection, holdingAny.Block);
 				}
 				// If something's being carried in-hand and aiming at nothing, try to put held block on back.
-				else if ((carriedBack == null) && (carriedAny.Behavior.Slots[CarrySlot.Back] != null)) {
+				else if ((carriedBack == null) && (holdingAny.Behavior.Slots[CarrySlot.Back] != null)) {
 					_action     = CurrentAction.SwapBack;
-					_targetSlot = carriedAny.Slot;
+					_targetSlot = holdingAny.Slot;
 				}
 			}
 			// If nothing's being carried in-hand and aiming at carryable block, try to pick it up.
@@ -112,26 +129,30 @@ namespace CarryCapacity.Common
 			else if ((carriedBack != null) && ((_targetSlot = FindActionSlot(slot => (carriedBack.Behavior.Slots[slot] != null))) != null))
 				_action = CurrentAction.SwapBack;
 			
-			OnGameTick(0.0F);  // Run this once to for validation. May reset action to None.
-			ev.Handled = true; // Prevent default action. Don't want to interact with blocks.
+			// Run this once to for validation. May reset action to None.
+			_timeHeld = 0.0F;
+			OnGameTick(0.0F);
+			// Prevent default action. Don't want to interact with blocks.
+			handled = EnumHandling.PreventDefault;
 		}
 		
 		public void OnGameTick(float deltaTime)
 		{
+			var interactHeld = System.ClientAPI.Input.MouseButton.Right;
+			if (!interactHeld) { CancelInteraction(true); return; }
+			
 			if (_action == CurrentAction.None) return;
 			var world  = System.ClientAPI.World;
 			var player = world.Player;
 			
-			// TODO: Don't run any of this while in a GUI.
 			// TODO: Only allow close blocks to be picked up.
 			// TODO: Don't allow the block underneath to change?
 			
-			// Only perform action if sneaking with empty hands.
 			if (!CanInteract(player.Entity))
-				{ OnMouseUp(); return; }
+				{ CancelInteraction(); return; }
 			
 			var carriedTarget = _targetSlot.HasValue ? player.Entity.GetCarried(_targetSlot.Value) : null;
-			var carriedAny    = player.Entity.GetCarried(CarrySlot.Hands)
+			var holdingAny    = player.Entity.GetCarried(CarrySlot.Hands)
 			                 ?? player.Entity.GetCarried(CarrySlot.Shoulder);
 			BlockSelection selection = null;
 			BlockBehaviorCarryable behavior;
@@ -142,8 +163,8 @@ namespace CarryCapacity.Common
 					
 					// Ensure the player hasn't in the meantime
 					// picked up / placed down something somehow.
-					if ((_action == CurrentAction.PickUp) == (carriedAny != null))
-						{ OnMouseUp(); return; }
+					if ((_action == CurrentAction.PickUp) == (holdingAny != null))
+						{ CancelInteraction(); return; }
 					
 					selection    = player.CurrentBlockSelection;
 					var position = (_action == CurrentAction.PlaceDown)
@@ -151,7 +172,7 @@ namespace CarryCapacity.Common
 						: selection?.Position;
 					// Make sure the player is still looking at the same block.
 					if (!_selectedBlock.Equals(position))
-						{ OnMouseUp(); return; }
+						{ CancelInteraction(); return; }
 					
 					// Get the block behavior from either the block
 					// to be picked up or the currently carried block.
@@ -167,7 +188,7 @@ namespace CarryCapacity.Common
 					// Ensure that the player hasn't in the meantime
 					// put something in that slot / on their back.
 					if ((carriedTarget != null) == (carriedBack != null))
-						{ OnMouseUp(); return; }
+						{ CancelInteraction(); return; }
 					
 					behavior = (carriedTarget != null) ? carriedTarget.Behavior : carriedBack.Behavior;
 					// Make sure the block to swap can still be put in that slot.
@@ -204,26 +225,26 @@ namespace CarryCapacity.Common
 					break;
 			}
 			
-			OnMouseUp();
+			CancelInteraction();
 		}
 		
-		public void OnMouseUp(MouseEvent ev = null)
+		public void CancelInteraction(bool resetTimeHeld = false)
 		{
 			_action     = CurrentAction.None;
 			_targetSlot = null;
-			_timeHeld   = 0.0F;
 			System.HudOverlayRenderer.CircleVisible = false;
+			if (resetTimeHeld) _timeHeld = 0.0F;
 		}
 		
 		
-		// public EnumHandling OnBeforeActiveSlotChanged(EntityAgent entity, ActiveSlotChangeEventArgs ev)
-		// {
-		// 	// If the player is carrying something in their hands,
-		// 	// prevent them from changing their active hotbar slot.
-		// 	return (entity.GetCarried(CarrySlot.Hands) != null)
-		// 		? EnumHandling.PreventDefault
-		// 		: EnumHandling.NotHandled;
-		// }
+		public EnumHandling OnBeforeActiveSlotChanged(EntityAgent entity, ActiveSlotChangeEventArgs ev)
+		{
+			// If the player is carrying something in their hands,
+			// prevent them from changing their active hotbar slot.
+			return (entity.GetCarried(CarrySlot.Hands) != null)
+				? EnumHandling.PreventDefault
+				: EnumHandling.PassThrough;
+		}
 		
 		
 		public static void OnPickUpMessage(IPlayer player, PickUpMessage message)
