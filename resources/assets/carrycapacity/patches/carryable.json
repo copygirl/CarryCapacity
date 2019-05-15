@@ -10,6 +10,17 @@
       }
     }
   } },
+  { file: "game:blocktypes/wood/generic/chest-labeled", op: "add", path: "/behaviors/-", value: {
+    name: "Carryable",
+    properties: {
+      translation: [ 0.0625, 0, 0 ],
+      rotation: [ 0, 180, 0 ],
+      slots: {
+        "Hands": {  },
+        "Back": {  },
+      }
+    }
+  } },
   { file: "game:blocktypes/stationarybasket", op: "add", path: "/behaviors/-", value: {
     name: "Carryable",
     properties: {
@@ -29,4 +40,24 @@
       }
     }
   } },
+  
+  { file: "game:blocktypes/metal/anvil", op: "add", path: "/behaviors/-", value: {
+    name: "Carryable",
+    properties: {
+      interactDelay: 1.5,
+      translation: [ 0.05, -0.1, -0.25 ],
+      rotation: [ 0, 90, 10 ],
+      scale: 0.8,
+      slots: { "Hands": { walkSpeedModifier: 0.5 } }
+    }
+  } },
+  { file: "game:blocktypes/clay/planter", op: "add", path: "/behaviors/-", value: {
+    name: "Carryable",
+    properties: { scale: 0.6 }
+  } },
+  
+  { file: "game:blocktypes/wood/generic/crate", op: "add", path: "/behaviors",
+    value: [ { name: "Carryable" } ] },
+  { file: "game:blocktypes/wood/generic/barrel", op: "add", path: "/behaviors",
+    value: [ { name: "Carryable" } ] },
 ]

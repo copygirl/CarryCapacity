@@ -42,8 +42,10 @@ modifiers and time to interact for some blocks that you can carry around.
 
 | Block | Walk speed (hands / back) | Time to pickup / place / switch |
 | ----- |:-------------------------:|:-------------------------------:|
-| Chest (heavy)  | 75% /  80% | 0.8 / 0.6 / 1.2 seconds |
-| Basket (light) | 85% / 100% | 0.4 / 0.3 / 0.6 seconds |
+| Basket (light)           | 85% / 100% | 0.4 / 0.3 / 0.6 seconds |
+| Chest (heavy)            | 75% /  80% | 0.8 / 0.6 / 1.2 seconds |
+| Crate / Barrel / Planter | 75% /   —  | 0.8 / 0.6 /  —  seconds |
+| Anvil (massive)          | 50% /   —  | 1.5 / 1.0 /  —  seconds |
 
 ## Modding
 
