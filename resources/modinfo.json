@@ -9,6 +9,6 @@
 	"authors": [ "copygirl" ],
 	
 	"dependencies": {
-		"game": "1.9.4"
+		"game": "1.9.4-rc.1"
 	}
 }
