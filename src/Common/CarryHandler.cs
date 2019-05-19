@@ -4,6 +4,7 @@ using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Vintagestory.API.Common.Entities;
 using Vintagestory.API.MathTools;
+using Vintagestory.API.Server;
 
 namespace CarryCapacity.Common
 {
@@ -247,17 +248,18 @@ namespace CarryCapacity.Common
 		}
 		
 		
-		public static void OnPickUpMessage(IPlayer player, PickUpMessage message)
+		public void OnPickUpMessage(IServerPlayer player, PickUpMessage message)
 		{
 			// FIXME: Do at least some validation of this data.
 			
 			var carried = player.Entity.GetCarried(message.Slot);
-			if ((message.Slot == CarrySlot.Back) || !CanInteract(player.Entity) ||
-			    (carried != null) || !player.Entity.Carry(message.Position, message.Slot))
+			if ((message.Slot == CarrySlot.Back) || !CanInteract(player.Entity) || (carried != null) ||
+			    !player.Entity.World.Claims.TryAccess(player, message.Position, EnumBlockAccessFlags.BuildOrBreak) ||
+			    !player.Entity.Carry(message.Position, message.Slot))
 				InvalidCarry(player, message.Position);
 		}
 		
-		public static void OnPlaceDownMessage(IPlayer player, PlaceDownMessage message)
+		public void OnPlaceDownMessage(IServerPlayer player, PlaceDownMessage message)
 		{
 			// FIXME: Do at least some validation of this data.
 			
@@ -267,7 +269,7 @@ namespace CarryCapacity.Common
 				InvalidCarry(player, message.Selection.Position);
 		}
 		
-		public static void OnSwapSlotsMessage(IPlayer player, SwapSlotsMessage message)
+		public void OnSwapSlotsMessage(IServerPlayer player, SwapSlotsMessage message)
 		{
 			if ((message.First == message.Second) || (message.First != CarrySlot.Back) ||
 			    !CanInteract(player.Entity) || !player.Entity.Swap(message.First, message.Second))
