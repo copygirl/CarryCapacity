@@ -20,10 +20,12 @@ namespace CarryCapacity.Common.Network
 				HitPosition = new Vec3d(_x, _y, _z),
 			};
 		
+		public BlockPos PlacedAt { get; }
+		
 		
 		private PlaceDownMessage() {  }
 		
-		public PlaceDownMessage(CarrySlot slot, BlockSelection selection)
+		public PlaceDownMessage(CarrySlot slot, BlockSelection selection, BlockPos placedAt)
 		{
 			Slot  = slot;
 			_pos  = selection.Position;
@@ -31,6 +33,7 @@ namespace CarryCapacity.Common.Network
 			_x = (float)selection.HitPosition.X;
 			_y = (float)selection.HitPosition.Y;
 			_z = (float)selection.HitPosition.Z;
+			PlacedAt = placedAt;
 		}
 	}
 }

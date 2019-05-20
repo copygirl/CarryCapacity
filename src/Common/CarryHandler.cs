@@ -225,8 +225,8 @@ namespace CarryCapacity.Common
 						System.ClientChannel.SendPacket(new PickUpMessage(selection.Position, _targetSlot.Value));
 					break;
 				case CurrentAction.PlaceDown:
-					if (PlaceDown(player, carriedTarget, selection))
-						System.ClientChannel.SendPacket(new PlaceDownMessage(_targetSlot.Value, selection));
+					if (PlaceDown(player, carriedTarget, selection, out var placedAt))
+						System.ClientChannel.SendPacket(new PlaceDownMessage(_targetSlot.Value, selection, placedAt));
 					break;
 				case CurrentAction.SwapBack:
 					if (player.Entity.Swap(_targetSlot.Value, CarrySlot.Back))
@@ -275,8 +275,12 @@ namespace CarryCapacity.Common
 			var carried = player.Entity.GetCarried(message.Slot);
 			if ((message.Slot == CarrySlot.Back) ||
 			    !CanInteract(player.Entity, CurrentAction.PlaceDown) ||
-			    (carried == null) || !PlaceDown(player, carried, message.Selection))
-				InvalidCarry(player, message.Selection.Position);
+			    (carried == null) || !PlaceDown(player, carried, message.Selection, out var placedAt))
+				InvalidCarry(player, message.PlacedAt);
+			// If succeeded, but by chance the client's projected placement isn't
+			// the same as the server's, re-sync the block at the client's position.
+			else if (placedAt != message.PlacedAt)
+				player.Entity.World.BlockAccessor.MarkBlockDirty(message.PlacedAt);
 		}
 		
 		public void OnSwapSlotsMessage(IServerPlayer player, SwapSlotsMessage message)
@@ -312,9 +316,11 @@ namespace CarryCapacity.Common
 		}
 		
 		public static bool PlaceDown(IPlayer player, CarriedBlock carried,
-		                             BlockSelection selection)
+		                             BlockSelection selection, out BlockPos placedAt)
 		{
-			if (!CanPlace(player.Entity.World, selection, carried)) return false;
+			if (!CanPlace(player.Entity.World, selection, carried))
+				{ placedAt = null; return false; }
+			
 			var clickedBlock = player.Entity.World.BlockAccessor.GetBlock(selection.Position);
 			
 			// Clone the selection, because we don't
@@ -323,12 +329,13 @@ namespace CarryCapacity.Common
 			
 			if (clickedBlock.IsReplacableBy(carried.Block)) {
 				selection.Face = BlockFacing.UP;
-				selection.HitPosition.Y = 1.0;
+				selection.HitPosition.Y = 0.5;
 			} else {
 				selection.Position.Offset(selection.Face);
 				selection.DidOffset = true;
 			}
 			
+			placedAt = selection.Position;
 			return player.PlaceCarried(selection, carried.Slot);
 		}
 		
