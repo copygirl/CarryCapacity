@@ -131,7 +131,7 @@ namespace CarryCapacity.Client
 						
 						var attachPointAndPose = animator.GetAttachmentPointPose(renderSettings.AttachmentPoint);
 						if (attachPointAndPose == null) continue;
-						var animModelMat = attachPointAndPose.CachedPose.AnimModelMatrix;
+						var animModelMat = attachPointAndPose.AnimModelMatrix;
 						Mat4f.Mul(modelMat, modelMat, animModelMat);
 						
 						// Apply attachment point transform.
