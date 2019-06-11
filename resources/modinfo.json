@@ -2,7 +2,7 @@
 	"type": "code",
 	"name": "CarryCapacity",
 	"modid": "carrycapacity",
-	"version": "0.4.1",
+	"version": "0.4.2",
 	
 	"description" : "Adds the capability to carry various things",
 	"website": "https://github.com/copygirl/CarryCapacity",

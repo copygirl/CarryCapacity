@@ -107,36 +107,43 @@ namespace CarryCapacity.Common
 			if (!isInteract || (_timeHeld > 0.0F)) return;
 			
 			if (holdingAny != null) {
-				// If something's being carried in-hand or on shoulder and aiming at block, try to place it.
+				// If something's being held and aiming at block, try to place it.
 				if (selection != null) {
-					if (!CanInteract(player.Entity, CurrentAction.PlaceDown)) return;
+					// If carrying something in-hand, don't require empty hands.
+					// This shouldn't occur since nothing is supposed to go into
+					// an active slot while something is carried there. This is
+					// just in case, so a carried block can still be placed down.
+					if (!CanInteract(player.Entity, (carriedHands != null))) return;
 					// Make sure it's put on a solid top face of a block.
 					if (!CanPlace(world, selection, holdingAny)) return;
 					_action        = CurrentAction.PlaceDown;
 					_targetSlot    = holdingAny.Slot;
 					_selectedBlock = GetPlacedPosition(world, selection, holdingAny.Block);
 				}
-				// If something's being carried in-hand and aiming at nothing, try to put held block on back.
-				else if ((carriedBack == null) && (holdingAny.Behavior.Slots[CarrySlot.Back] != null)) {
-					if (!CanInteract(player.Entity, CurrentAction.SwapBack)) return;
-					_action     = CurrentAction.SwapBack;
-					_targetSlot = holdingAny.Slot;
+				// If something's being held and aiming at nothing, try to put held block on back.
+				else {
+					if (!CanInteract(player.Entity, true)) return;
+					if ((carriedBack == null) && (holdingAny.Behavior.Slots[CarrySlot.Back] != null)) {
+						_action     = CurrentAction.SwapBack;
+						_targetSlot = holdingAny.Slot;
+					}
 				}
 			}
-			// If nothing's being carried in-hand and aiming at carryable block, try to pick it up.
+			// If nothing's being held and aiming at carryable block, try to pick it up.
 			else if (selection != null) {
-				if (!CanInteract(player.Entity, CurrentAction.PickUp)) return;
+				if (!CanInteract(player.Entity, true)) return;
 				if ((_targetSlot = FindActionSlot(slot => block.IsCarryable(slot))) != null) {
 					_action        = CurrentAction.PickUp;
 					_selectedBlock = selection.Position;
 				}
 			}
-			// If nothing's being carried in-hand and aiming at nothing or non-carryable block, try to grab block on back.
+			// If nothing's being held and aiming at nothing or non-carryable block, try to grab block on back.
 			else if (carriedBack != null) {
-				if (!CanInteract(player.Entity, CurrentAction.SwapBack)) return;
+				if (!CanInteract(player.Entity, true)) return;
 				if ((_targetSlot = FindActionSlot(slot => (carriedBack.Behavior.Slots[slot] != null))) != null)
 					_action = CurrentAction.SwapBack;
 			}
+			else return;
 			
 			// Run this once to for validation. May reset action to None.
 			_timeHeld = 0.0F;
@@ -157,7 +164,7 @@ namespace CarryCapacity.Common
 			// TODO: Only allow close blocks to be picked up.
 			// TODO: Don't allow the block underneath to change?
 			
-			if (!CanInteract(player.Entity, _action))
+			if (!CanInteract(player.Entity, (_action != CurrentAction.PlaceDown) || (_targetSlot != CarrySlot.Hands)))
 				{ CancelInteraction(); return; }
 			
 			var carriedTarget = _targetSlot.HasValue ? player.Entity.GetCarried(_targetSlot.Value) : null;
@@ -262,7 +269,7 @@ namespace CarryCapacity.Common
 			
 			var carried = player.Entity.GetCarried(message.Slot);
 			if ((message.Slot == CarrySlot.Back) || (carried != null) ||
-			    !CanInteract(player.Entity, CurrentAction.PickUp) ||
+			    !CanInteract(player.Entity, true) ||
 			    !player.Entity.World.Claims.TryAccess(player, message.Position, EnumBlockAccessFlags.BuildOrBreak) ||
 			    !player.Entity.Carry(message.Position, message.Slot))
 				InvalidCarry(player, message.Position);
@@ -274,7 +281,7 @@ namespace CarryCapacity.Common
 			
 			var carried = player.Entity.GetCarried(message.Slot);
 			if ((message.Slot == CarrySlot.Back) ||
-			    !CanInteract(player.Entity, CurrentAction.PlaceDown) ||
+			    !CanInteract(player.Entity, (message.Slot != CarrySlot.Hands)) ||
 			    (carried == null) || !PlaceDown(player, carried, message.Selection, out var placedAt))
 				InvalidCarry(player, message.PlacedAt);
 			// If succeeded, but by chance the client's projected placement isn't
@@ -286,7 +293,7 @@ namespace CarryCapacity.Common
 		public void OnSwapSlotsMessage(IServerPlayer player, SwapSlotsMessage message)
 		{
 			if ((message.First == message.Second) || (message.First != CarrySlot.Back) ||
-			    !CanInteract(player.Entity, CurrentAction.SwapBack) ||
+			    !CanInteract(player.Entity, true) ||
 			    !player.Entity.Swap(message.First, message.Second))
 				player.Entity.WatchedAttributes.MarkPathDirty(CarriedBlock.ATTRIBUTE_ID);
 		}
@@ -296,11 +303,11 @@ namespace CarryCapacity.Common
 		///   Returns whether the specified entity has the required prerequisites
 		///   to interact using CarryCapacity: Must be sneaking with an empty hand.
 		/// </summary>
-		private static bool CanInteract(EntityAgent entity, CurrentAction action)
+		private static bool CanInteract(EntityAgent entity, bool requireEmptyHanded)
 		{
 			var isSneaking    = entity.Controls.Sneak;
 			var isEmptyHanded = entity.RightHandItemSlot.Empty && entity.LeftHandItemSlot.Empty;
-			return (isSneaking && ((action == CurrentAction.PlaceDown) || isEmptyHanded));
+			return (isSneaking && (!requireEmptyHanded || isEmptyHanded));
 		}
 		
 		public static bool CanPlace(IWorldAccessor world, BlockSelection selection,
