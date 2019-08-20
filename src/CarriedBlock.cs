@@ -186,7 +186,7 @@ namespace CarryCapacity
 				var failureCode = "__ignore__";
 				if (!Block.TryPlaceBlock(world, player, ItemStack, selection, ref failureCode)) return false;
 			} else {
-				world.BlockAccessor.SetBlock((ushort)Block.Id, selection.Position);
+				world.BlockAccessor.SetBlock(Block.Id, selection.Position);
 				// TODO: Handle type attribute.
 			}
 			
