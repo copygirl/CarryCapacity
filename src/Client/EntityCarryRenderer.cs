@@ -29,6 +29,8 @@ namespace CarryCapacity.Client
 		private ICoreClientAPI API { get; set; }
 		private AnimationFixer AnimationFixer { get; set; }
 		
+		private long _renderTick = 0;
+		
 		public EntityCarryRenderer(ICoreClientAPI api)
 		{
 			API = api;
@@ -63,8 +65,6 @@ namespace CarryCapacity.Client
 		public double RenderOrder => 1.0;
 		public int RenderRange => 99;
 		
-		private float moveWobble;
-		
 		public void OnRenderFrame(float deltaTime, EnumRenderStage stage)
 		{
 			foreach (var player in API.World.AllPlayers) {
@@ -79,6 +79,7 @@ namespace CarryCapacity.Client
 				
 				RenderAllCarried(player.Entity, deltaTime, stage);
 			}
+			_renderTick++;
 		}
 		
 		
@@ -173,25 +174,57 @@ namespace CarryCapacity.Client
 			return modelMat;
 		}
 		
+		// The most recent tick that the hands were rendered.
+		private long _lastTickHandsRendered = 0;
+		private float _moveWobble;
+		private float _lastYaw;
+		private float _yawDifference;
+		
 		private float[] GetFirstPersonHandsMatrix(EntityAgent entity, float[] viewMat, float deltaTime)
 		{
 			var modelMat = Mat4f.Invert(Mat4f.Create(), viewMat);
 			
+			// If the hands haven't been rendered in the last 10 render ticks, reset wobble and such.
+			if (_renderTick - _lastTickHandsRendered > 10) {
+				_moveWobble = 0;
+				_lastYaw = entity.Pos.Yaw;;
+				_yawDifference = 0;
+			}
+			_lastTickHandsRendered = _renderTick;
+			
+			
 			if (entity.Controls.TriesToMove) {
 				var moveSpeed = entity.Controls.MovespeedMultiplier * (float)entity.GetWalkSpeedMultiplier();
-				moveWobble += moveSpeed * deltaTime * 5.0F;
+				_moveWobble += moveSpeed * deltaTime * 5.0F;
 			} else {
-				var target = (float)(Math.Round(moveWobble / Math.PI) * Math.PI);
-				var speed = deltaTime * (0.2F + Math.Abs(target - moveWobble) * 4);
-				if (Math.Abs(target - moveWobble) < speed) moveWobble = target;
-				else moveWobble += Math.Sign(target - moveWobble) * speed;
+				var target = (float)(Math.Round(_moveWobble / Math.PI) * Math.PI);
+				var speed = deltaTime * (0.2F + Math.Abs(target - _moveWobble) * 4);
+				if (Math.Abs(target - _moveWobble) < speed) _moveWobble = target;
+				else _moveWobble += Math.Sign(target - _moveWobble) * speed;
 			}
-			moveWobble = moveWobble % (GameMath.PI * 2);
+			_moveWobble = _moveWobble % (GameMath.PI * 2);
 			
-			var moveWobbleOffsetX = GameMath.Sin((moveWobble + GameMath.PI)) * 0.03F;
-			var moveWobbleOffsetY = GameMath.Sin(moveWobble * 2) * 0.02F;
+			var moveWobbleOffsetX = GameMath.Sin((_moveWobble + GameMath.PI)) * 0.03F;
+			var moveWobbleOffsetY = GameMath.Sin(_moveWobble * 2) * 0.02F;
 			
-			Mat4f.Translate(modelMat, modelMat, moveWobbleOffsetX, moveWobbleOffsetY - 0.25F, -0.25F);
+			
+			_yawDifference += GameMath.AngleRadDistance(_lastYaw, entity.Pos.Yaw);
+			_yawDifference *= (1 - 0.075F);
+			_lastYaw = entity.Pos.Yaw;
+			
+			var yawRotation   = -_yawDifference / 2;
+			var pitchRotation = (entity.Pos.Pitch - GameMath.PI) / 4;
+			
+			
+			Mat4f.RotateY(modelMat, modelMat, yawRotation);
+			Mat4f.Translate(modelMat, modelMat, 0.0F, -0.35F, -0.20F);
+			Mat4f.RotateY(modelMat, modelMat, -yawRotation);
+			Mat4f.RotateX(modelMat, modelMat, pitchRotation / 2);
+			Mat4f.Translate(modelMat, modelMat, 0.0F, 0.0F, -0.20F);
+			Mat4f.RotateX(modelMat, modelMat, pitchRotation);
+			Mat4f.RotateY(modelMat, modelMat, yawRotation);
+			
+			Mat4f.Translate(modelMat, modelMat, moveWobbleOffsetX, moveWobbleOffsetY, 0.0F);
 			Mat4f.RotateY(modelMat, modelMat, 90.0F * GameMath.DEG2RAD);
 			
 			return modelMat;
