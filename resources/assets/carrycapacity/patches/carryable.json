@@ -51,10 +51,13 @@
       slots: { "Hands": { walkSpeedModifier: 0.5 } }
     }
   } },
-  { file: "game:blocktypes/clay/planter", op: "add", path: "/behaviors/-", value: {
-    name: "Carryable",
-    properties: { scale: 0.6 }
-  } },
+  
+  { file: "game:blocktypes/clay/planter", op: "add", path: "/behaviors/-",
+    value: { name: "Carryable", properties: { scale: 0.6 } } },
+  { file: "game:blocktypes/clay/lootvessel", op: "add", path: "/behaviors/-",
+    value: { name: "Carryable", properties: { scale: 0.6 } } },
+  { file: "game:blocktypes/clay/storagevessel", op: "add", path: "/behaviors/-",
+    value: { name: "Carryable", properties: { scale: 0.6 } } },
   
   { file: "game:blocktypes/wood/generic/crate", op: "add", path: "/behaviors",
     value: [ { name: "Carryable" } ] },
