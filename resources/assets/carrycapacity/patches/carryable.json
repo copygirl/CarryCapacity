@@ -29,7 +29,6 @@
         "Hands": {
           animation: "carrycapacity:holdlight",
           walkSpeedModifier: 0.85,
-          rotation: [ 0, 90, 0 ],
         },
         "Back": {
           walkSpeedModifier: 1.0,
