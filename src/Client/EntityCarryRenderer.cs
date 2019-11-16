@@ -74,7 +74,7 @@ namespace CarryCapacity.Client
 				if (player.Entity == null) continue;
 				
 				// Fix up animations that should/shouldn't be playing.
-				var isLocalPlayer = (player.Entity == API.World.Player);
+				var isLocalPlayer = (player == API.World.Player);
 				if (isLocalPlayer) AnimationFixer.Update(player.Entity);
 				
 				RenderAllCarried(player.Entity, deltaTime, stage);
