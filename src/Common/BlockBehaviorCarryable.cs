@@ -35,10 +35,10 @@ namespace CarryCapacity.Common
 			};
 		
 		public static readonly IReadOnlyDictionary<CarrySlot, float> DEFAULT_WALKSPEED
-			= new Dictionary<CarrySlot, float> { // Default slowdown while carrying ..
-				{ CarrySlot.Hands    , 0.75F },    // .. in hands:    25%
-				{ CarrySlot.Back     , 0.80F },    // .. on back:     20%
-				{ CarrySlot.Shoulder , 0.85F },    // .. on shoulder: 15%
+			= new Dictionary<CarrySlot, float> {
+				{ CarrySlot.Hands    , -0.25F },
+				{ CarrySlot.Back     , -0.15F },
+				{ CarrySlot.Shoulder , -0.15F },
 			};
 		
 		public static readonly IReadOnlyDictionary<CarrySlot, string> DEFAULT_ANIMATION
@@ -103,7 +103,7 @@ namespace CarryCapacity.Common
 			
 			public string Animation { get; set; }
 			
-			public float WalkSpeedModifier { get; set; } = 1.0F;
+			public float WalkSpeedModifier { get; set; } = 0.0F;
 		}
 		
 		public class SlotStorage
@@ -136,7 +136,7 @@ namespace CarryCapacity.Common
 						settings.Transform = GetTransform(slotProperties, defaultTansform);
 						settings.Animation = slotProperties["animation"].AsString(settings.Animation);
 						
-						if (!DEFAULT_WALKSPEED.TryGetValue(slot, out var speed)) speed = 1.0F;
+						if (!DEFAULT_WALKSPEED.TryGetValue(slot, out var speed)) speed = 0.0F;
 						settings.WalkSpeedModifier = slotProperties["walkSpeedModifier"].AsFloat(speed);
 					}
 					

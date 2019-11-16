@@ -90,8 +90,9 @@ namespace CarryCapacity
 				entity.StartAnimation(slotSettings.Animation);
 			
 			if (entity is EntityAgent agent) {
-				var speed = slotSettings?.WalkSpeedModifier ?? 1.0F;
-				if (speed != 1.0F) agent.SetWalkSpeedModifier($"{ CarrySystem.MOD_ID }:{ slot }", speed, false);
+				var speed = slotSettings?.WalkSpeedModifier ?? 0.0F;
+				if (speed != 0.0F) agent.Stats.Set("walkspeed",
+					$"{ CarrySystem.MOD_ID }:{ slot }", speed, false);
 				
 				if (slot == CarrySlot.Hands) LockedItemSlot.Lock(agent.RightHandItemSlot);
 				if (slot != CarrySlot.Back ) LockedItemSlot.Lock(agent.LeftHandItemSlot);
@@ -115,7 +116,7 @@ namespace CarryCapacity
 			if (animation != null) entity.StopAnimation(animation);
 			
 			if (entity is EntityAgent agent) {
-				agent.RemoveWalkSpeedModifier($"{ CarrySystem.MOD_ID }:{ slot }");
+				agent.Stats.Remove("walkspeed", $"{ CarrySystem.MOD_ID }:{ slot }");
 				
 				if (slot == CarrySlot.Hands) LockedItemSlot.Restore(agent.RightHandItemSlot);
 				if (slot != CarrySlot.Back ) LockedItemSlot.Restore(agent.LeftHandItemSlot);

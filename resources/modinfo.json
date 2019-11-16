@@ -9,6 +9,6 @@
 	"authors": [ "copygirl" ],
 
 	"dependencies": {
-		"game": "1.10.0"
+		"game": "1.11.0"
 	}
 }

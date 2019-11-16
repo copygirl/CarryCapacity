@@ -31,7 +31,7 @@ For the curious, the values in the following table show example walk speed modif
 | Block                   | Weight  |   Walk speed   | Time to interact  |
 | ----------------------- |:-------:|:--------------:|:-----------------:|
 | Basket                  |  Light  | 85% /   100%   | 0.4 / 0.3 / 0.6 s |
-| Chest / Barrel / Vessel |  Heavy  | 75% /    80%   | 0.8 / 0.6 / 1.2 s |
+| Chest / Barrel / Vessel |  Heavy  | 75% /    85%   | 0.8 / 0.6 / 1.2 s |
 | Crate / Planter         |  Heavy  | 75% / ~~back~~ | 0.8 / 0.6 /  —  s |
 | Anvil                   | Massive | 50% / ~~back~~ | 1.5 / 1.0 /  —  s |
 
