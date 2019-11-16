@@ -274,6 +274,8 @@ namespace CarryCapacity
 		public static bool Carry(this Entity entity, BlockPos pos,
 		                         CarrySlot slot, bool checkIsCarryable = true)
 		{
+			if ((entity is EntityPlayer playerEntity) && !entity.World.Claims.TryAccess(
+				playerEntity.Player, pos, EnumBlockAccessFlags.BuildOrBreak)) return false;
 			if (CarriedBlock.Get(entity, slot) != null) return false;
 			var carried = CarriedBlock.PickUp(entity.World, pos, slot, checkIsCarryable);
 			if (carried == null) return false;
@@ -294,6 +296,8 @@ namespace CarryCapacity
 			if (player == null) throw new ArgumentNullException(nameof(player));
 			if (selection == null) throw new ArgumentNullException(nameof(selection));
 			
+			if (!player.Entity.World.Claims.TryAccess(
+				player, selection.Position, EnumBlockAccessFlags.BuildOrBreak)) return false;
 			var carried = CarriedBlock.Get(player.Entity, slot);
 			if (carried == null) return false;
 			

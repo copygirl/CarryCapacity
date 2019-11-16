@@ -270,7 +270,6 @@ namespace CarryCapacity.Common
 			var carried = player.Entity.GetCarried(message.Slot);
 			if ((message.Slot == CarrySlot.Back) || (carried != null) ||
 			    !CanInteract(player.Entity, true) ||
-			    !player.Entity.World.Claims.TryAccess(player, message.Position, EnumBlockAccessFlags.BuildOrBreak) ||
 			    !player.Entity.Carry(message.Position, message.Slot))
 				InvalidCarry(player, message.Position);
 		}
@@ -280,9 +279,9 @@ namespace CarryCapacity.Common
 			// FIXME: Do at least some validation of this data.
 			
 			var carried = player.Entity.GetCarried(message.Slot);
-			if ((message.Slot == CarrySlot.Back) ||
+			if ((message.Slot == CarrySlot.Back) || (carried == null) ||
 			    !CanInteract(player.Entity, (message.Slot != CarrySlot.Hands)) ||
-			    (carried == null) || !PlaceDown(player, carried, message.Selection, out var placedAt))
+			    !PlaceDown(player, carried, message.Selection, out var placedAt))
 				InvalidCarry(player, message.PlacedAt);
 			// If succeeded, but by chance the client's projected placement isn't
 			// the same as the server's, re-sync the block at the client's position.
