@@ -151,6 +151,9 @@ namespace CarryCapacity
 					blockEntityData.RemoveAttribute("posx");
 					blockEntityData.RemoveAttribute("posy");
 					blockEntityData.RemoveAttribute("posz");
+					// And angle needs to be removed, or else it will
+					// override the angle set from block placement.
+					blockEntityData.RemoveAttribute("meshAngle");
 				}
 			}
 			
