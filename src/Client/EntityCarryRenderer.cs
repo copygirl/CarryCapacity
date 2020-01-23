@@ -68,43 +68,46 @@ namespace CarryCapacity.Client
 		public void OnRenderFrame(float deltaTime, EnumRenderStage stage)
 		{
 			foreach (var player in API.World.AllPlayers) {
-				// Player entity may be null in some circumstances.
-				// Maybe the other player is too far away, so there's
-				// no entity spawned for them on the client's side?
+				// Player entity may be null in some circumstances..?
 				if (player.Entity == null) continue;
 				
-				// Fix up animations that should/shouldn't be playing.
 				var isLocalPlayer = (player == API.World.Player);
+				var isShadowPass  = (stage != EnumRenderStage.Opaque);
+				
+				// Fix up animations that should/shouldn't be playing.
 				if (isLocalPlayer) AnimationFixer.Update(player.Entity);
 				
-				RenderAllCarried(player.Entity, deltaTime, stage);
+				// Don't render if entity hasn't been rendered for the
+				// specified render stage (unless it's the local player).
+				else if (isShadowPass ? !player.Entity.IsShadowRendered
+				                      : !player.Entity.IsRendered) continue;
+				
+				RenderAllCarried(player.Entity, deltaTime, isShadowPass);
 			}
 			_renderTick++;
 		}
 		
 		
 		/// <summary> Renders all carried blocks of the specified entity. </summary>
-		private void RenderAllCarried(EntityAgent entity, float deltaTime, EnumRenderStage stage)
+		private void RenderAllCarried(EntityAgent entity, float deltaTime, bool isShadowPass)
 		{
 			var allCarried = entity.GetCarried().ToList();
 			if (allCarried.Count == 0) return; // Entity is not carrying anything.
 			
 			var isLocalPlayer = (entity == API.World.Player.Entity);
 			var isFirstPerson = isLocalPlayer && (API.World.Player.CameraMode == EnumCameraMode.FirstPerson);
-			var isShadowPass  = (stage != EnumRenderStage.Opaque);
 			
 			var renderer = (EntityShapeRenderer)entity.Properties.Client.Renderer;
 			var animator = entity.AnimManager.Animator;
 			
 			foreach (var carried in allCarried)
-				RenderCarried(entity, carried, deltaTime, stage,
+				RenderCarried(entity, carried, deltaTime,
 				              isLocalPlayer, isFirstPerson, isShadowPass,
 				              renderer, animator);
 		}
 		
 		/// <summary> Renders the specified carried block on the specified entity. </summary>
-		private void RenderCarried(EntityAgent entity, CarriedBlock carried,
-		                           float deltaTime, EnumRenderStage stage,
+		private void RenderCarried(EntityAgent entity, CarriedBlock carried, float deltaTime,
 		                           bool isLocalPlayer, bool isFirstPerson, bool isShadowPass,
 		                           EntityShapeRenderer renderer, IAnimator animator)
 		{
