@@ -40,14 +40,8 @@ namespace CarryCapacity.Client
 			AnimationFixer = new AnimationFixer();
 		}
 		
-		public void Dispose()
-		{
-			API.Event.UnregisterRenderer(this, EnumRenderStage.Opaque);
-			API.Event.UnregisterRenderer(this, EnumRenderStage.ShadowFar);
-			API.Event.UnregisterRenderer(this, EnumRenderStage.ShadowNear);
-			API = null;
-			AnimationFixer = null;
-		}
+		// We don't have any unmanaged resources to dispose.
+		public void Dispose() {  }
 		
 		
 		private ItemRenderInfo GetRenderInfo(CarriedBlock carried)
