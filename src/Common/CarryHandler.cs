@@ -1,6 +1,5 @@
 using CarryCapacity.Common.Network;
 using CarryCapacity.Utility;
-using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Vintagestory.API.Common.Entities;
 using Vintagestory.API.MathTools;
@@ -106,8 +105,9 @@ namespace CarryCapacity.Common
 			// Only continue if player is starting an interaction (right click).
 			if (!isInteract || (_timeHeld > 0.0F)) return;
 			
+			// If something's being held..
 			if (holdingAny != null) {
-				// If something's being held and aiming at block, try to place it.
+				// ..and aiming at block, try to place it.
 				if (selection != null) {
 					// If carrying something in-hand, don't require empty hands.
 					// This shouldn't occur since nothing is supposed to go into
@@ -129,18 +129,16 @@ namespace CarryCapacity.Common
 					}
 				}
 			}
-			// If nothing's being held and aiming at carryable block, try to pick it up.
-			else if (selection != null) {
-				if (!CanInteract(player.Entity, true)) return;
+			// If nothing's being held..
+			else if (CanInteract(player.Entity, true)) {
+				// ..and aiming at carryable block, try to pick it up.
 				if ((_targetSlot = FindActionSlot(slot => block.IsCarryable(slot))) != null) {
 					_action        = CurrentAction.PickUp;
 					_selectedBlock = selection.Position;
 				}
-			}
-			// If nothing's being held and aiming at nothing or non-carryable block, try to grab block on back.
-			else if (carriedBack != null) {
-				if (!CanInteract(player.Entity, true)) return;
-				if ((_targetSlot = FindActionSlot(slot => (carriedBack.Behavior.Slots[slot] != null))) != null)
+				// ..and aiming at nothing or non-carryable block, try to grab block on back.
+				else if ((carriedBack != null) &&
+				         (_targetSlot = FindActionSlot(slot => (carriedBack.Behavior.Slots[slot] != null))) != null)
 					_action = CurrentAction.SwapBack;
 			}
 			else return;
