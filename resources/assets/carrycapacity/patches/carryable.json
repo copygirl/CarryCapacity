@@ -52,7 +52,7 @@
       slots: { "Hands": {  }, "Back": {  } },
     }
   } },
-  { file: "game:blocktypes/clay/storagevessel", op: "add", path: "/behaviors/-", value: {
+  { file: "game:blocktypes/clay/storagevessel", op: "add", path: "/behaviorsByType/*/-", value: {
     name: "Carryable", properties: {
       translation: [ -0.125, 0, 0 ],
       slots: { "Hands": {  }, "Back": {  } },
