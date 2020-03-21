@@ -11,18 +11,18 @@
 
 Available right here through [GitHub Releases][DL].
 
-To install, start the game and go to the *Mod Manager* in the main menu. There you can find a button labeled *Open Mod Folder* that will open said folder in your file explorer. Simply copy the `.zip` file you downloaded into here (without extracting it).
+To install, start the game and go to the *Mod Manager* in the main menu. There you can find a button labeled *Open Mod Folder* that will open said folder in your file explorer. Simply copy the `.zip` file you downloaded into here **without extracting it**.
 
 [DL]: https://github.com/copygirl/CarryCapacity/releases
 
 ## Usage
 
-The only control in this mod is **sneaking** and **holding right click**.   If you're doing things right, you will see a circle that fills up over time.
+The only control in this mod is **sneaking** and **holding right click**, while not having an item selected in your hotbar, **nor your offhand slot**. If you're doing things right, you will see a circle that fills up over time.
 
-- While empty-handed, you can pick up supported blocks.
-- With something in-hand, place it down on a **solid side** of a block.
-- Or put what you're carrying on your back by instead aiming in the air.
-- Grab what's on your back into your hands again while holding nothing.
+- You can pick up supported blocks.
+- While carrying something in-hand, place it down on a **solid side** of a block.
+- Or put what you're carrying on your back by instead not aiming at a block.
+- Grab what's on your back into your hands again.
 
 Carrying something in-hand prevents you from using items and sprinting. Whether in your hands or on your back, you may be slowed down in general. The exact amount depends on the type of block, though. Additionally, placing takes a little less time (-25%) than picking up, and interacting with your back is quite a bit slower (+50%).
 
