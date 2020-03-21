@@ -49,9 +49,9 @@ namespace CarryCapacity
 		{
 			ClientAPI     = api;
 			ClientChannel = api.Network.RegisterChannel(MOD_ID)
-				.RegisterMessageType(typeof(PickUpMessage))
-				.RegisterMessageType(typeof(PlaceDownMessage))
-				.RegisterMessageType(typeof(SwapSlotsMessage));
+				.RegisterMessageType<PickUpMessage>()
+				.RegisterMessageType<PlaceDownMessage>()
+				.RegisterMessageType<SwapSlotsMessage>();
 			
 			EntityCarryRenderer = new EntityCarryRenderer(api);
 			HudOverlayRenderer  = new HudOverlayRenderer(api);
@@ -65,9 +65,9 @@ namespace CarryCapacity
 			
 			ServerAPI     = api;
 			ServerChannel = api.Network.RegisterChannel(MOD_ID)
-				.RegisterMessageType(typeof(PickUpMessage))
-				.RegisterMessageType(typeof(PlaceDownMessage))
-				.RegisterMessageType(typeof(SwapSlotsMessage));
+				.RegisterMessageType<PickUpMessage>()
+				.RegisterMessageType<PlaceDownMessage>()
+				.RegisterMessageType<SwapSlotsMessage>();
 			
 			DeathHandler          = new DeathHandler(api);
 			BackwardCompatHandler = new BackwardCompatHandler(api);

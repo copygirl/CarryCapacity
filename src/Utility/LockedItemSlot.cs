@@ -1,5 +1,4 @@
 using System;
-using System.Linq;
 using Vintagestory.API.Common;
 
 namespace CarryCapacity.Utility

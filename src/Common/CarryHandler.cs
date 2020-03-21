@@ -345,10 +345,12 @@ namespace CarryCapacity.Common
 		
 		/// <summary> Called when a player picks up or places down an invalid block,
 		///           requiring it to get notified about the action being rejected. </summary>
-		private static void InvalidCarry(IPlayer player, BlockPos pos)
+		private void InvalidCarry(IServerPlayer player, BlockPos pos)
 		{
 			player.Entity.World.BlockAccessor.MarkBlockDirty(pos);
 			player.Entity.WatchedAttributes.MarkPathDirty(CarriedBlock.ATTRIBUTE_ID);
+			player.Entity.WatchedAttributes.MarkPathDirty("stats/walkspeed");
+			// FIXME: LockedItemSlot needs to be synced, but I feel like a rewrite is coming soon.
 		}
 		
 		/// <summary> Returns the position that the specified block would
