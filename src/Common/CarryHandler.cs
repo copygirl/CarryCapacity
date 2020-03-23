@@ -132,7 +132,7 @@ namespace CarryCapacity.Common
 			// If nothing's being held..
 			else if (CanInteract(player.Entity, true)) {
 				// ..and aiming at carryable block, try to pick it up.
-				if ((_targetSlot = FindActionSlot(slot => block.IsCarryable(slot))) != null) {
+				if ((block != null) && (_targetSlot = FindActionSlot(slot => block.IsCarryable(slot))) != null) {
 					_action        = CurrentAction.PickUp;
 					_selectedBlock = selection.Position;
 				}
