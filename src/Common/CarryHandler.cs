@@ -122,11 +122,13 @@ namespace CarryCapacity.Common
 				}
 				// If something's being held and aiming at nothing, try to put held block on back.
 				else {
-					if (!CanInteract(player.Entity, true)) return;
-					if ((carriedBack == null) && (holdingAny.Behavior.Slots[CarrySlot.Back] != null)) {
-						_action     = CurrentAction.SwapBack;
-						_targetSlot = holdingAny.Slot;
-					}
+					// Check to make sure that player is sneaking empty-handed,
+					// is not already carrying something in the back slot, and
+					// the currently held block can be equipped on the back.
+					if (!CanInteract(player.Entity, true) || (carriedBack != null) ||
+					    (holdingAny.Behavior.Slots[CarrySlot.Back] == null)) return;
+					_action     = CurrentAction.SwapBack;
+					_targetSlot = holdingAny.Slot;
 				}
 			}
 			// If nothing's being held..
@@ -140,6 +142,7 @@ namespace CarryCapacity.Common
 				else if ((carriedBack != null) &&
 				         (_targetSlot = FindActionSlot(slot => (carriedBack.Behavior.Slots[slot] != null))) != null)
 					_action = CurrentAction.SwapBack;
+				else return;
 			}
 			else return;
 			
