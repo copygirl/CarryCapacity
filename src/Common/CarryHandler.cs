@@ -302,12 +302,18 @@ namespace CarryCapacity.Common
 		/// <summary>
 		///   Returns whether the specified entity has the required prerequisites
 		///   to interact using CarryCapacity: Must be sneaking with an empty hand.
+		///   Also tests for whether a valid hotbar slot is currently selected.
 		/// </summary>
 		private static bool CanInteract(EntityAgent entity, bool requireEmptyHanded)
 		{
-			var isSneaking    = entity.Controls.Sneak;
+			if (!entity.Controls.Sneak) return false;
+			
 			var isEmptyHanded = entity.RightHandItemSlot.Empty && entity.LeftHandItemSlot.Empty;
-			return (isSneaking && (!requireEmptyHanded || isEmptyHanded));
+			if (!isEmptyHanded && requireEmptyHanded) return false;
+			
+			if (!(entity is EntityPlayer entityPlayer)) return true;
+			var activeHotbarSlot = entityPlayer.Player.InventoryManager.ActiveHotbarSlotNumber;
+			return (activeHotbarSlot >= 0) && (activeHotbarSlot < 10);
 		}
 		
 		public static bool CanPlace(IWorldAccessor world, BlockSelection selection,
