@@ -69,8 +69,11 @@ namespace CarryCapacity.Common
 			return null;
 		}
 		
-		public void OnEntityAction(EnumEntityAction action, ref EnumHandling handled)
+		public void OnEntityAction(EnumEntityAction action, bool on, ref EnumHandling handled)
 		{
+			// Only handle action if it's being activated rather than deactivated.
+			if (!on) return;
+			
 			bool isInteract;
 			switch (action) {
 				// Right click (interact action) starts carry's pickup and place handling.

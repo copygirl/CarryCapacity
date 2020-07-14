@@ -44,7 +44,7 @@ namespace CarryCapacity.Client
 			var stepSize = 1.0F / CIRCLE_MAX_STEPS;
 			
 			var steps = 1 + (int)Math.Ceiling(CIRCLE_MAX_STEPS * progress);
-			var data = new MeshData(steps * 2, steps * 6, false, false, true, false, false);
+			var data = new MeshData(steps * 2, steps * 6, false, false, true, false);
 			
 			for (var i = 0; i < steps; i++) {
 				var p = Math.Min(progress, i * stepSize) * Math.PI * 2;
