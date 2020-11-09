@@ -7,6 +7,7 @@ using Vintagestory.API.Common;
 using Vintagestory.API.Common.Entities;
 using Vintagestory.API.Datastructures;
 using Vintagestory.API.MathTools;
+using Vintagestory.GameContent;
 
 namespace CarryCapacity
 {
@@ -173,6 +174,7 @@ namespace CarryCapacity
 			
 			world.BlockAccessor.RemoveBlockEntity(pos);
 			world.BlockAccessor.SetBlock(0, pos);
+			world.Api.ModLoader.GetModSystem<ModSystemBlockReinforcement>()?.ClearReinforcement(pos);
 			return carried;
 		}
 		
@@ -277,8 +279,7 @@ namespace CarryCapacity
 		public static bool Carry(this Entity entity, BlockPos pos,
 		                         CarrySlot slot, bool checkIsCarryable = true)
 		{
-			if ((entity is EntityPlayer playerEntity) && !entity.World.Claims.TryAccess(
-				playerEntity.Player, pos, EnumBlockAccessFlags.BuildOrBreak)) return false;
+			if (!HasPermissionToCarry(entity, pos)) return false;
 			if (CarriedBlock.Get(entity, slot) != null) return false;
 			var carried = CarriedBlock.PickUp(entity.World, pos, slot, checkIsCarryable);
 			if (carried == null) return false;
@@ -286,6 +287,17 @@ namespace CarryCapacity
 			carried.Set(entity, slot);
 			carried.PlaySound(pos, entity.World, (entity as EntityPlayer));
 			return true;
+		}
+		
+		private static bool HasPermissionToCarry(Entity entity, BlockPos pos)
+		{
+			var isReinforced = entity.Api.ModLoader.GetModSystem<ModSystemBlockReinforcement>()?.IsReinforced(pos) ?? false;
+			if (entity is EntityPlayer playerEntity) {
+				var isCreative = (playerEntity.Player.WorldData.CurrentGameMode == EnumGameMode.Creative);
+				if (!isCreative && isReinforced) return false; // Can't pick up when reinforced unless in creative mode.
+				var hasClaimsAccess = entity.World.Claims.TryAccess(playerEntity.Player, pos, EnumBlockAccessFlags.BuildOrBreak);
+				return hasClaimsAccess; // Can pick up if has access to any claims that might be present.
+			} else return !isReinforced; // If not a player entity, can pick up if not reinforced.
 		}
 		
 		/// <summary>
