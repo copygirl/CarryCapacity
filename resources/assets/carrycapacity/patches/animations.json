@@ -1,18 +1,18 @@
 [
-  { file: "game:shapes/entity/humanoid/seraph", op: "add", path: "/elements/0/children/0/attachmentpoints/-", value: {
+  { file: "game:shapes/entity/humanoid/seraph-faceless", op: "add", path: "/elements/0/children/0/attachmentpoints/-", value: {
     "code": "carrycapacity:FrontCarry",
     "posX": 0.0, "rotationX":   0.0,
     "posY": 0.0, "rotationY": 180.0,
     "posZ": 3.0, "rotationZ":   0.0,
   } },
-  { file: "game:shapes/entity/humanoid/seraph", op: "add", path: "/elements/0/children/0/children/1/attachmentpoints", value: [ {
+  { file: "game:shapes/entity/humanoid/seraph-faceless", op: "add", path: "/elements/0/children/0/children/1/attachmentpoints", value: [ {
     "code": "carrycapacity:ShoulderL",
     "posX": 1.5, "rotationX": -90.0,
     "posY": 4.0, "rotationY":   0.0,
     "posZ": 0.0, "rotationZ":   0.0,
   } ] },
   
-  { file: "game:shapes/entity/humanoid/seraph", op: "add", path: "/animations/-", value: {
+  { file: "game:shapes/entity/humanoid/seraph-faceless", op: "add", path: "/animations/-", value: {
     "name": "Holding Heavy Block (CarryCapacity)",
     "code": "carrycapacity:holdheavy",
     "quantityframes": 30,
@@ -52,7 +52,7 @@
     }
   } },
   
-  { file: "game:shapes/entity/humanoid/seraph", op: "add", path: "/animations/-", value: {
+  { file: "game:shapes/entity/humanoid/seraph-faceless", op: "add", path: "/animations/-", value: {
     "name": "Holding Light Block (CarryCapacity)",
     "code": "carrycapacity:holdlight",
     "quantityframes": 30,
@@ -86,7 +86,7 @@
     }
   } },
   
-  { file: "game:shapes/entity/humanoid/seraph", op: "add", path: "/animations/-", value: {
+  { file: "game:shapes/entity/humanoid/seraph-faceless", op: "add", path: "/animations/-", value: {
     "name": "Carry on Shoulder (CarryCapacity)",
     "code": "carrycapacity:shoulder",
     "quantityframes": 30,
