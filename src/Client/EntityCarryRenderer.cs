@@ -88,22 +88,24 @@ namespace CarryCapacity.Client
 			var allCarried = entity.GetCarried().ToList();
 			if (allCarried.Count == 0) return; // Entity is not carrying anything.
 			
-			var isLocalPlayer = (entity == API.World.Player.Entity);
-			var isFirstPerson = isLocalPlayer && (API.World.Player.CameraMode == EnumCameraMode.FirstPerson);
+			var player = API.World.Player;
+			var isLocalPlayer = (entity == player.Entity);
+			var isFirstPerson = isLocalPlayer && (player.CameraMode == EnumCameraMode.FirstPerson);
+			var isImmersiveFirstPerson = player.ImmersiveFpMode;
 			
 			var renderer = (EntityShapeRenderer)entity.Properties.Client.Renderer;
 			var animator = entity.AnimManager.Animator;
 			
 			foreach (var carried in allCarried)
 				RenderCarried(entity, carried, deltaTime,
-				              isLocalPlayer, isFirstPerson, isShadowPass,
-				              renderer, animator);
+				              isLocalPlayer, isFirstPerson, isImmersiveFirstPerson,
+				              isShadowPass, renderer, animator);
 		}
 		
 		/// <summary> Renders the specified carried block on the specified entity. </summary>
 		private void RenderCarried(EntityAgent entity, CarriedBlock carried, float deltaTime,
-		                           bool isLocalPlayer, bool isFirstPerson, bool isShadowPass,
-		                           EntityShapeRenderer renderer, IAnimator animator)
+		                           bool isLocalPlayer, bool isFirstPerson, bool isImmersiveFirstPerson,
+		                           bool isShadowPass, EntityShapeRenderer renderer, IAnimator animator)
 		{
 			var inHands = (carried.Slot == CarrySlot.Hands);
 			if (!inHands && isFirstPerson && !isShadowPass) return; // Only Hands slot is rendered in first person.
@@ -113,12 +115,14 @@ namespace CarryCapacity.Client
 			var renderInfo     = GetRenderInfo(carried);
 			
 			float[] modelMat;
-			if (inHands && isFirstPerson && !isShadowPass) {
+			if (inHands && isFirstPerson && !isImmersiveFirstPerson && !isShadowPass) {
 				modelMat = GetFirstPersonHandsMatrix(entity, viewMat, deltaTime);
 			} else {
 				var attachPointAndPose = animator.GetAttachmentPointPose(renderSettings.AttachmentPoint);
 				if (attachPointAndPose == null) return; // Couldn't find attachment point.
 				modelMat = GetAttachmentPointMatrix(renderer, attachPointAndPose);
+				// If in immersive first person, move the model down a bit so it's not too much "in your face".
+				if (isImmersiveFirstPerson) Mat4f.Translate(modelMat, modelMat, 0.0F, -0.12F, 0.0F);
 			}
 			
 			// Apply carried block's behavior transform.
