@@ -16,22 +16,23 @@
 		
 		<Reference Include="VintagestoryAPI">
 			<HintPath>$(VINTAGE_STORY)/VintagestoryAPI.dll</HintPath>
+			<Private>false</Private>
 		</Reference>
 		<Reference Include="VSEssentials">
 			<HintPath>$(VINTAGE_STORY)/Mods/VSEssentials.dll</HintPath>
+			<Private>false</Private>
 		</Reference>
 		<Reference Include="VSSurvivalMod">
 			<HintPath>$(VINTAGE_STORY)/Mods/VSSurvivalMod.dll</HintPath>
+			<Private>false</Private>
 		</Reference>
 		
 	</ItemGroup>
 	<ItemGroup>
 		
-		<PackageReference Include="protobuf-net" Version="2.1.0" />
+		<PackageReference Include="protobuf-net" Version="2.1.0">
+			<Private>false</Private>
+		</PackageReference>
 		
 	</ItemGroup>
-	<Target Name="Copy" AfterTargets="PostBuildEvent" Condition="'$(Configuration)' == 'Debug'">
-		<Copy SourceFiles="$(TargetPath)" DestinationFolder="$(VINTAGE_STORY_DATA)/Mods" />
-		<Copy SourceFiles="$(TargetDir)/$(TargetName).pdb" DestinationFolder="$(VINTAGE_STORY_DATA)/Mods" />
-	</Target>
 </Project>
