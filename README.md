@@ -20,7 +20,7 @@ To install, start the game and go to the *Mod Manager* in the main menu. There y
 The only control in this mod is **sneaking** and **holding right click**, while not having an item selected in your hotbar, **nor your offhand slot**. If you're doing things right, you will see a circle that fills up over time.
 
 - You can pick up supported blocks.
-- While carrying something in-hand, place it down on a **solid side** of a block.
+- While carrying something in-hand, place it back down against a block.
 - Or put what you're carrying on your back by instead not aiming at a block.
 - Grab what's on your back into your hands again.
 

@@ -117,8 +117,6 @@ namespace CarryCapacity.Common
 					// an active slot while something is carried there. This is
 					// just in case, so a carried block can still be placed down.
 					if (!CanInteract(player.Entity, (carriedHands != null))) return;
-					// Make sure it's put on a solid top face of a block.
-					if (!CanPlace(world, selection, holdingAny)) return;
 					_action        = CurrentAction.PlaceDown;
 					_targetSlot    = holdingAny.Slot;
 					_selectedBlock = GetPlacedPosition(world, selection, holdingAny.Block);
@@ -191,7 +189,7 @@ namespace CarryCapacity.Common
 						? GetPlacedPosition(world, selection, carriedTarget.Block)
 						: selection?.Position;
 					// Make sure the player is still looking at the same block.
-					if (!_selectedBlock.Equals(position))
+					if (_selectedBlock != position)
 						{ CancelInteraction(); return; }
 					
 					// Get the block behavior from either the block
@@ -319,24 +317,9 @@ namespace CarryCapacity.Common
 			return (activeHotbarSlot >= 0) && (activeHotbarSlot < 10);
 		}
 		
-		public static bool CanPlace(IWorldAccessor world, BlockSelection selection,
-		                            CarriedBlock carried)
-		{
-			var clickedBlock = world.BlockAccessor.GetBlock(selection.Position);
-			return clickedBlock.IsReplacableBy(carried.Block)
-				// If clicked block is replacable, check block below instead.
-				? world.BlockAccessor.GetBlock(selection.Position.DownCopy())
-					.SideSolid[BlockFacing.UP.Index]
-				// Otherwise, just make sure the clicked side is solid.
-				: clickedBlock.SideSolid[selection.Face.Index];
-		}
-		
 		public static bool PlaceDown(IPlayer player, CarriedBlock carried,
 		                             BlockSelection selection, out BlockPos placedAt)
 		{
-			if (!CanPlace(player.Entity.World, selection, carried))
-				{ placedAt = null; return false; }
-			
 			var clickedBlock = player.Entity.World.BlockAccessor.GetBlock(selection.Position);
 			
 			// Clone the selection, because we don't
@@ -373,11 +356,8 @@ namespace CarryCapacity.Common
 			if (selection == null) return null;
 			var position     = selection.Position.Copy();
 			var clickedBlock = world.BlockAccessor.GetBlock(position);
-			if (!clickedBlock.IsReplacableBy(block)) {
-				if (clickedBlock.SideSolid[selection.Face.Index])
-					position.Offset(selection.Face);
-				else return null;
-			}
+			if (!clickedBlock.IsReplacableBy(block))
+				position.Offset(selection.Face);
 			return position;
 		}
 		
