@@ -117,9 +117,11 @@ namespace CarryCapacity.Common
 					// an active slot while something is carried there. This is
 					// just in case, so a carried block can still be placed down.
 					if (!CanInteract(player.Entity, (carriedHands != null))) return;
-					_action        = CurrentAction.PlaceDown;
-					_targetSlot    = holdingAny.Slot;
 					_selectedBlock = GetPlacedPosition(world, selection, holdingAny.Block);
+					if (_selectedBlock == null) return;
+					
+					_action     = CurrentAction.PlaceDown;
+					_targetSlot = holdingAny.Slot;
 				}
 				// If something's being held and aiming at nothing, try to put held block on back.
 				else {
@@ -356,8 +358,11 @@ namespace CarryCapacity.Common
 			if (selection == null) return null;
 			var position     = selection.Position.Copy();
 			var clickedBlock = world.BlockAccessor.GetBlock(position);
-			if (!clickedBlock.IsReplacableBy(block))
+			if (!clickedBlock.IsReplacableBy(block)) {
 				position.Offset(selection.Face);
+				var replacedBlock = world.BlockAccessor.GetBlock(position);
+				if (!replacedBlock.IsReplacableBy(block)) return null;
+			}
 			return position;
 		}
 		
