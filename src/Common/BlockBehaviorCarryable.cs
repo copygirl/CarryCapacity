@@ -61,6 +61,7 @@ namespace CarryCapacity.Common
 		
 		public override void Initialize(JsonObject properties)
 		{
+			base.Initialize(properties);
 			if (TryGetFloat(properties, "interactDelay", out var d)) InteractDelay = d;
 			DefaultTransform = GetTransform(properties, DEFAULT_BLOCK_TRANSFORM);
 			Slots.Initialize(properties["slots"], DefaultTransform);
