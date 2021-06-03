@@ -3,12 +3,12 @@
 		
 		<AssemblyTitle>CarryCapacity</AssemblyTitle>
 		<Authors>copygirl</Authors>
-		<Version>0.5.3</Version>
+		<Version>0.6.0</Version>
 		
 		<Description>Vintage Story mod which adds the capability to carry various things</Description>
 		<RepositoryUrl>https://github.com/copygirl/CarryCapacity</RepositoryUrl>
 		
-		<TargetFramework>net452</TargetFramework>
+		<TargetFramework>net461</TargetFramework>
 		<LangVersion>latest</LangVersion>
 		
 	</PropertyGroup>
