@@ -10,12 +10,11 @@ namespace CarryCapacity.Client
 {
 	public class EntityCarryRenderer : IRenderer
 	{
-		private static readonly Dictionary<CarrySlot, SlotRenderSettings> _renderSettings
-			= new Dictionary<CarrySlot, SlotRenderSettings> {
-				{ CarrySlot.Hands    , new SlotRenderSettings("carrycapacity:FrontCarry", 0.05F, -0.5F, -0.5F) },
-				{ CarrySlot.Back     , new SlotRenderSettings("Back", 0.0F, -0.6F, -0.5F) },
-				{ CarrySlot.Shoulder , new SlotRenderSettings("carrycapacity:ShoulderL", -0.5F, 0.0F, -0.5F) },
-			};
+		private static readonly Dictionary<CarrySlot, SlotRenderSettings> _renderSettings = new() {
+			{ CarrySlot.Hands    , new SlotRenderSettings("carrycapacity:FrontCarry", 0.05F, -0.5F, -0.5F) },
+			{ CarrySlot.Back     , new SlotRenderSettings("Back", 0.0F, -0.6F, -0.5F) },
+			{ CarrySlot.Shoulder , new SlotRenderSettings("carrycapacity:ShoulderL", -0.5F, 0.0F, -0.5F) },
+		};
 		
 		private class SlotRenderSettings
 		{
@@ -98,14 +97,14 @@ namespace CarryCapacity.Client
 			
 			foreach (var carried in allCarried)
 				RenderCarried(entity, carried, deltaTime,
-				              isLocalPlayer, isFirstPerson, isImmersiveFirstPerson,
+				              isFirstPerson, isImmersiveFirstPerson,
 				              isShadowPass, renderer, animator);
 		}
 		
 		/// <summary> Renders the specified carried block on the specified entity. </summary>
 		private void RenderCarried(EntityAgent entity, CarriedBlock carried, float deltaTime,
-		                           bool isLocalPlayer, bool isFirstPerson, bool isImmersiveFirstPerson,
-		                           bool isShadowPass, EntityShapeRenderer renderer, IAnimator animator)
+		                           bool isFirstPerson, bool isImmersiveFirstPerson, bool isShadowPass,
+		                           EntityShapeRenderer renderer, IAnimator animator)
 		{
 			var inHands = (carried.Slot == CarrySlot.Hands);
 			if (!inHands && isFirstPerson && !isShadowPass) return; // Only Hands slot is rendered in first person.
@@ -203,9 +202,9 @@ namespace CarryCapacity.Client
 				if (Math.Abs(target - _moveWobble) < speed) _moveWobble = target;
 				else _moveWobble += Math.Sign(target - _moveWobble) * speed;
 			}
-			_moveWobble = _moveWobble % (GameMath.PI * 2);
+			_moveWobble %= GameMath.PI * 2;
 			
-			var moveWobbleOffsetX = GameMath.Sin((_moveWobble + GameMath.PI)) * 0.03F;
+			var moveWobbleOffsetX = GameMath.Sin(_moveWobble + GameMath.PI) * 0.03F;
 			var moveWobbleOffsetY = GameMath.Sin(_moveWobble * 2) * 0.02F;
 			
 			

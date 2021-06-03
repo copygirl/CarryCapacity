@@ -26,13 +26,12 @@ namespace CarryCapacity.Common
 		public static BlockBehaviorCarryable DEFAULT { get; }
 			= new BlockBehaviorCarryable(null);
 		
-		public static ModelTransform DEFAULT_BLOCK_TRANSFORM
-			=> new ModelTransform {
-				Translation = new Vec3f(0.0F, 0.0F, 0.0F),
-				Rotation    = new Vec3f(0.0F, 0.0F, 0.0F),
-				Origin      = new Vec3f(0.5F, 0.5F, 0.5F),
-				ScaleXYZ    = new Vec3f(0.5F, 0.5F, 0.5F)
-			};
+		public static ModelTransform DEFAULT_BLOCK_TRANSFORM => new() {
+			Translation = new Vec3f(0.0F, 0.0F, 0.0F),
+			Rotation    = new Vec3f(0.0F, 0.0F, 0.0F),
+			Origin      = new Vec3f(0.5F, 0.5F, 0.5F),
+			ScaleXYZ    = new Vec3f(0.5F, 0.5F, 0.5F)
+		};
 		
 		public static readonly IReadOnlyDictionary<CarrySlot, float> DEFAULT_WALKSPEED
 			= new Dictionary<CarrySlot, float> {
@@ -109,8 +108,7 @@ namespace CarryCapacity.Common
 		
 		public class SlotStorage
 		{
-			private readonly Dictionary<CarrySlot, SlotSettings> _dict
-				= new Dictionary<CarrySlot, SlotSettings>();
+			private readonly Dictionary<CarrySlot, SlotSettings> _dict = new();
 			
 			public SlotSettings this[CarrySlot slot]
 				=> _dict.TryGetValue(slot, out var settings) ? settings : null;

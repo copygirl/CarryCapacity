@@ -37,9 +37,8 @@ namespace CarryCapacity
 		
 		public CarriedBlock(CarrySlot slot, ItemStack stack, ITreeAttribute blockEntityData)
 		{
-			if (stack == null) throw new ArgumentNullException(nameof(stack));
 			Slot            = slot;
-			ItemStack       = stack;
+			ItemStack       = stack ?? throw new ArgumentNullException(nameof(stack));;
 			BlockEntityData = blockEntityData;
 		}
 		

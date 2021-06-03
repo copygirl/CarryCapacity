@@ -8,7 +8,7 @@ namespace CarryCapacity.Client
 	///           the local player to actually reflect what is being carried. </summary>
 	public class AnimationFixer
 	{
-		private HashSet<string> _previous = new HashSet<string>();
+		private HashSet<string> _previous = new();
 		
 		public void Update(EntityPlayer player)
 		{

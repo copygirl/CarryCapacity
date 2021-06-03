@@ -31,7 +31,7 @@ namespace CarryCapacity.Utility
 		public static IAttribute TryGet(this IAttribute attr, params string[] keys)
 		{
 			foreach (var key in keys) {
-				if (!(attr is ITreeAttribute tree)) return null;
+				if (attr is not ITreeAttribute tree) return null;
 				attr = tree[key];
 			}
 			return attr;
@@ -47,7 +47,7 @@ namespace CarryCapacity.Utility
 			if (attr == null) throw new ArgumentNullException(nameof(attr));
 			for (var i = 0; i < keys.Length; i++) {
 				var key = keys[i];
-				if (!(attr is ITreeAttribute tree)) {
+				if (attr is not ITreeAttribute tree) {
 					if ((attr == null) && (value == null)) return; // If removing value, return on missing tree nodes.
 					var getter = $"attr{ keys.Take(i).Select(k => $"[\"{ k }\"]") }";
 					var type   = attr?.GetType()?.ToString() ?? "null";

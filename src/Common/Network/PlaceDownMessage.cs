@@ -13,12 +13,11 @@ namespace CarryCapacity.Common.Network
 		private readonly byte _face;
 		private readonly float _x, _y, _z;
 		
-		public BlockSelection Selection
-			=> new BlockSelection {
-				Position    = _pos,
-				Face        = BlockFacing.ALLFACES[_face],
-				HitPosition = new Vec3d(_x, _y, _z),
-			};
+		public BlockSelection Selection => new() {
+			Position    = _pos,
+			Face        = BlockFacing.ALLFACES[_face],
+			HitPosition = new Vec3d(_x, _y, _z),
+		};
 		
 		public BlockPos PlacedAt { get; }
 		

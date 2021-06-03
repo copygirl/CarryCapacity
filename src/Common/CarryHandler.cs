@@ -314,7 +314,7 @@ namespace CarryCapacity.Common
 			var isEmptyHanded = entity.RightHandItemSlot.Empty && entity.LeftHandItemSlot.Empty;
 			if (!isEmptyHanded && requireEmptyHanded) return false;
 			
-			if (!(entity is EntityPlayer entityPlayer)) return true;
+			if (entity is not EntityPlayer entityPlayer) return true;
 			var activeHotbarSlot = entityPlayer.Player.InventoryManager.ActiveHotbarSlotNumber;
 			return (activeHotbarSlot >= 0) && (activeHotbarSlot < 10);
 		}

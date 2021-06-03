@@ -11,12 +11,10 @@ namespace CarryCapacity.Utility
 		public LockedItemSlot(ItemSlot original)
 			: base(original.Inventory)
 		{
-			if (original == null) throw new ArgumentNullException(nameof(original));
-			
-			Original       = original;
+			Original       = original ?? throw new ArgumentNullException(nameof(original));
 			Itemstack      = original.Itemstack;
 			BackgroundIcon = original.BackgroundIcon;
-			StorageType    = default(EnumItemStorageFlags);
+			StorageType    = default;
 			
 			SlotID = -1;
 			for (var i = 0; i < original.Inventory.Count; i++)
@@ -26,7 +24,7 @@ namespace CarryCapacity.Utility
 		
 		public static LockedItemSlot Lock(ItemSlot slot)
 		{
-			if (!(slot is LockedItemSlot locked)) {
+			if (slot is not LockedItemSlot locked) {
 				locked = new LockedItemSlot(slot);
 				slot.Inventory[locked.SlotID] = locked;
 			}
