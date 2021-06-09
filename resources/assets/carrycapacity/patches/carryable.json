@@ -69,6 +69,13 @@
       slots: { "Hands": { walkSpeedModifier: -0.5 } }
     }
   } },
+  { file: "game:blocktypes/stone/quern", op: "add", path: "/behaviors/-", value: {
+    name: "Carryable",
+    properties: {
+      interactDelay: 1.0,
+      slots: { "Hands": { walkSpeedModifier: -0.4 } }
+    }
+  } },
   
   { file: "game:blocktypes/clay/planter", op: "add", path: "/behaviorsByType/*/-",
     value: { name: "Carryable", properties: { scale: 0.6 } } },
