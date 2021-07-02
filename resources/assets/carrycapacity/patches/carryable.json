@@ -1,5 +1,5 @@
 [
-  { file: "game:blocktypes/wood/generic/chest", op: "add", path: "/behaviors/-", value: {
+  { file: "game:blocktypes/wood/chest", op: "add", path: "/behaviors/-", value: {
     name: "Carryable",
     properties: {
       translation: [ 0.0625, 0, 0 ],
@@ -10,7 +10,7 @@
       }
     }
   } },
-  { file: "game:blocktypes/wood/generic/chest-labeled", op: "add", path: "/behaviors/-", value: {
+  { file: "game:blocktypes/wood/chest-labeled", op: "add", path: "/behaviors/-", value: {
     name: "Carryable",
     properties: {
       translation: [ 0.0625, 0, 0 ],
@@ -40,7 +40,7 @@
     }
   } },
   
-  { file: "game:blocktypes/wood/generic/barrel", op: "add", path: "/behaviors/-", value: {
+  { file: "game:blocktypes/wood/barrel", op: "add", path: "/behaviors/-", value: {
     name: "Carryable", properties: {
       translation: [ -0.0625, 0, 0 ],
       slots: { "Hands": {  }, "Back": {  } },
@@ -80,6 +80,6 @@
   { file: "game:blocktypes/clay/planter", op: "add", path: "/behaviorsByType/*/-",
     value: { name: "Carryable", properties: { scale: 0.6 } } },
   
-  { file: "game:blocktypes/wood/generic/crate", op: "add", path: "/behaviors",
+  { file: "game:blocktypes/wood/crate", op: "add", path: "/behaviors",
     value: [ { name: "Carryable" } ] },
 ]
