@@ -51,8 +51,8 @@ namespace CarryCapacity.Client
 				var x =  (float)Math.Sin(p);
 				var y = -(float)Math.Cos(p);
 				
-				data.AddVertex(x           , y           , 0, ColorUtil.WhiteArgb);
-				data.AddVertex(x * ringSize, y * ringSize, 0, ColorUtil.WhiteArgb);
+				data.AddVertex(x           , y           , 0);
+				data.AddVertex(x * ringSize, y * ringSize, 0);
 				
 				if (i > 0) {
 					data.AddIndices(new []{ i * 2 - 2, i * 2 - 1, i * 2 + 0 });
