@@ -46,6 +46,12 @@
       slots: { "Hands": {  }, "Back": {  } },
     }
   } },
+  { file: "game:blocktypes/wood/woodtyped/crate", op: "add", path: "/behaviors/-", value: {
+    name: "Carryable", properties: {
+      translation: [ -0.0625, 0, 0 ],
+      slots: { "Hands": {  } },
+    }
+  } },
   { file: "game:blocktypes/clay/lootvessel", op: "add", path: "/behaviors/-", value: {
     name: "Carryable", properties: {
       translation: [ -0.125, 0, 0 ],

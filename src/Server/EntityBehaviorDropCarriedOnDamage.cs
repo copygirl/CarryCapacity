@@ -17,7 +17,7 @@ namespace CarryCapacity.Server
 		public EntityBehaviorDropCarriedOnDamage(Entity entity)
 			: base(entity) {  }
 		
-		public override void OnEntityReceiveDamage(DamageSource damageSource, float damage)
+		public override void OnEntityReceiveDamage(DamageSource damageSource, ref float damage)
 		{
 			if (damageSource.Type != EnumDamageType.Heal)
 				entity.DropCarried(DROP_FROM, 1, 2);
