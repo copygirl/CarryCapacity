@@ -173,6 +173,7 @@ namespace CarryCapacity
 			
 			world.BlockAccessor.SetBlock(0, pos);
 			world.Api.ModLoader.GetModSystem<ModSystemBlockReinforcement>()?.ClearReinforcement(pos);
+			world.BlockAccessor.TriggerNeighbourBlockUpdate(pos);
 			return carried;
 		}
 		
@@ -195,6 +196,7 @@ namespace CarryCapacity
 			}
 			
 			RestoreBlockEntityData(world, selection.Position);
+			world.BlockAccessor.TriggerNeighbourBlockUpdate(selection.Position);
 			if (entity != null) Remove(entity, Slot);
 			PlaySound(selection.Position, world, (entity as EntityPlayer));
 			
