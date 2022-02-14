@@ -1,3 +1,4 @@
+using System.Linq;
 using CarryCapacity.Common.Network;
 using CarryCapacity.Utility;
 using Vintagestory.API.Common;
@@ -28,6 +29,8 @@ namespace CarryCapacity.Common
 		
 		public void InitClient()
 		{
+			System.ClientChannel.SetMessageHandler<LockSlotsMessage>(OnLockSlotsMessage);
+
 			System.ClientAPI.Input.InWorldAction += OnEntityAction;
 			System.ClientAPI.Event.RegisterGameTickListener(OnGameTick, 0);
 			
@@ -265,6 +268,31 @@ namespace CarryCapacity.Common
 				? EnumHandling.PreventDefault
 				: EnumHandling.PassThrough;
 		}
+
+
+		public void OnLockSlotsMessage(LockSlotsMessage message)
+		{
+			var player = System.ClientAPI.World.Player;
+			var hotbar = player.InventoryManager.GetHotbarInventory();
+			for (var i = 0; i < hotbar.Count; i++) {
+				if (message.HotbarSlots?.Contains(i) == true)
+					LockedItemSlot.Lock(hotbar[i]);
+				else LockedItemSlot.Restore(hotbar[i]);
+			}
+		}
+
+		public void SendLockSlotsMessage(IServerPlayer player)
+		{
+			var hotbar = player.InventoryManager.GetHotbarInventory();
+			var slots  = Enumerable.Range(0, hotbar.Count).Where(i => hotbar[i] is LockedItemSlot).ToList();
+			System.ServerChannel.SendPacket(new LockSlotsMessage(slots), player);
+		}
+		public static void SendLockSlotsMessage(EntityPlayer player)
+		{
+			if ((player == null) || (player.World.PlayerByUid(player.PlayerUID) is not IServerPlayer serverPlayer)) return;
+			var system = player.World.Api.ModLoader.GetModSystem<CarrySystem>();
+			system.CarryHandler.SendLockSlotsMessage(serverPlayer);
+		}
 		
 		
 		public void OnPickUpMessage(IServerPlayer player, PickUpMessage message)
@@ -347,7 +375,7 @@ namespace CarryCapacity.Common
 			player.Entity.World.BlockAccessor.MarkBlockDirty(pos);
 			player.Entity.WatchedAttributes.MarkPathDirty(CarriedBlock.ATTRIBUTE_ID);
 			player.Entity.WatchedAttributes.MarkPathDirty("stats/walkspeed");
-			// FIXME: LockedItemSlot needs to be synced, but I feel like a rewrite is coming soon.
+			SendLockSlotsMessage(player);
 		}
 		
 		/// <summary> Returns the position that the specified block would

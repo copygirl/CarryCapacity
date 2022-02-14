@@ -96,6 +96,7 @@ namespace CarryCapacity
 				
 				if (slot == CarrySlot.Hands) LockedItemSlot.Lock(agent.RightHandItemSlot);
 				if (slot != CarrySlot.Back ) LockedItemSlot.Lock(agent.LeftHandItemSlot);
+				CarryHandler.SendLockSlotsMessage(agent as EntityPlayer);
 			}
 		}
 		
@@ -120,6 +121,7 @@ namespace CarryCapacity
 				
 				if (slot == CarrySlot.Hands) LockedItemSlot.Restore(agent.RightHandItemSlot);
 				if (slot != CarrySlot.Back ) LockedItemSlot.Restore(agent.LeftHandItemSlot);
+				CarryHandler.SendLockSlotsMessage(agent as EntityPlayer);
 			}
 			
 			entity.WatchedAttributes.Remove(ATTRIBUTE_ID, slot.ToString());

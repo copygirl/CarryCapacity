@@ -50,6 +50,7 @@ namespace CarryCapacity
 		{
 			ClientAPI     = api;
 			ClientChannel = api.Network.RegisterChannel(MOD_ID)
+				.RegisterMessageType<LockSlotsMessage>()
 				.RegisterMessageType<PickUpMessage>()
 				.RegisterMessageType<PlaceDownMessage>()
 				.RegisterMessageType<SwapSlotsMessage>();
@@ -66,6 +67,7 @@ namespace CarryCapacity
 			
 			ServerAPI     = api;
 			ServerChannel = api.Network.RegisterChannel(MOD_ID)
+				.RegisterMessageType<LockSlotsMessage>()
 				.RegisterMessageType<PickUpMessage>()
 				.RegisterMessageType<PlaceDownMessage>()
 				.RegisterMessageType<SwapSlotsMessage>();
