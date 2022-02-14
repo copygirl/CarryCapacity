@@ -86,6 +86,6 @@
   { file: "game:blocktypes/clay/planter", op: "add", path: "/behaviorsByType/*/-",
     value: { name: "Carryable", properties: { scale: 0.6 } } },
   
-  { file: "game:blocktypes/wood/crate", op: "add", path: "/behaviors",
+  { file: "game:blocktypes/wood/crate-legacy", op: "add", path: "/behaviors",
     value: [ { name: "Carryable" } ] },
 ]
