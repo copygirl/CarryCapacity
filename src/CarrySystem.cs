@@ -11,7 +11,7 @@ using Vintagestory.API.Server;
 	Description = "Adds the capability to carry various things",
 	Website     = "https://github.com/copygirl/CarryCapacity",
 	Authors     = new []{ "copygirl" })]
-[assembly: ModDependency("game", "1.15.6")]
+[assembly: ModDependency("game", "1.16.0")]
 
 namespace CarryCapacity
 {
