@@ -171,7 +171,6 @@ namespace CarryCapacity
 			
 			if (checkIsCarryable && !carried.Block.IsCarryable(slot)) return null;
 			
-			world.BlockAccessor.RemoveBlockEntity(pos);
 			world.BlockAccessor.SetBlock(0, pos);
 			world.Api.ModLoader.GetModSystem<ModSystemBlockReinforcement>()?.ClearReinforcement(pos);
 			return carried;
