@@ -45,7 +45,8 @@ namespace CarryCapacity.Common
 				.SetMessageHandler<PlaceDownMessage>(OnPlaceDownMessage)
 				.SetMessageHandler<SwapSlotsMessage>(OnSwapSlotsMessage);
 			
-			System.ServerAPI.Event.OnEntitySpawn += OnServerEntitySpawn;
+			System.ServerAPI.Event.OnEntitySpawn    += OnServerEntitySpawn;
+			System.ServerAPI.Event.PlayerNowPlaying += OnServerPlayerNowPlaying;
 			
 			System.ServerAPI.Event.BeforeActiveSlotChanged +=
 				(player, ev) => OnBeforeActiveSlotChanged(player.Entity, ev);
@@ -54,12 +55,19 @@ namespace CarryCapacity.Common
 		
 		public void OnServerEntitySpawn(Entity entity)
 		{
+			// We handle player "spawning" in OnServerPlayerJoin.
+			// If we send a LockSlotsMessage at this point, the client's player is still null.
+			if (entity is EntityPlayer) return;
+			
 			// Set this again so walk speed modifiers and animations can be applied.
 			foreach (var carried in entity.GetCarried())
 				carried.Set(entity, carried.Slot);
-			
-			// if (entity is EntityPlayer player)
-			// 	player.Controls.OnAction += OnEntityAction;
+		}
+		
+		public void OnServerPlayerNowPlaying(IServerPlayer player)
+		{
+			foreach (var carried in player.Entity.GetCarried())
+				carried.Set(player.Entity, carried.Slot);
 		}
 		
 		
@@ -268,8 +276,8 @@ namespace CarryCapacity.Common
 				? EnumHandling.PreventDefault
 				: EnumHandling.PassThrough;
 		}
-
-
+		
+		
 		public void OnLockSlotsMessage(LockSlotsMessage message)
 		{
 			var player = System.ClientAPI.World.Player;
@@ -280,7 +288,7 @@ namespace CarryCapacity.Common
 				else LockedItemSlot.Restore(hotbar[i]);
 			}
 		}
-
+		
 		public void SendLockSlotsMessage(IServerPlayer player)
 		{
 			var hotbar = player.InventoryManager.GetHotbarInventory();
