@@ -216,8 +216,7 @@ namespace CarryCapacity
 		/// </summary>
 		public void RestoreBlockEntityData(IWorldAccessor world, BlockPos pos)
 		{
-			if ((world.Side != EnumAppSide.Server)
-				|| (BlockEntityData == null)) return;
+			if ((world.Side != EnumAppSide.Server) || (BlockEntityData == null)) return;
 			
 			// Set the block entity's position to the new position.
 			// Without this, we get some funny behavior.
